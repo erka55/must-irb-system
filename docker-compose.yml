@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: irb_db
+    environment:
+      POSTGRES_USER: irb
+      POSTGRES_PASSWORD: irb
+      POSTGRES_DB: irb_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - irb_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: irb_backend
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    container_name: irb_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  irb_data:
