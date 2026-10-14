@@ -14,3 +14,12 @@ build/
 npm-debug.log*
 .DS_Store
 Thumbs.db
+
+# --- Django & Python Rules ---
+venv/
+.venv/
+*.pyc
+__pycache__/
+*.sqlite3
+backend/media/
+backend/static/
