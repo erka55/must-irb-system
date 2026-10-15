@@ -1,4 +1,4 @@
-from rest_framework import status, permissions
+from rest_framework import status, permissions, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -37,3 +37,15 @@ class UserProfileView(APIView):
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+# НЭМЭГДСЭН: Хэрэглэгчдийн жагсаалтыг ролоор шүүж буцаах ViewSet
+class UserViewSet(viewsets.ModelViewSet):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = User.objects.all().order_by('id')
+        role = self.request.query_params.get('role', None)
+        if role is not None:
+            queryset = queryset.filter(role=role)
+        return queryset
