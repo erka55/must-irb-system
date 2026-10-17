@@ -39,6 +39,12 @@ class Proposal(models.Model):
         default=Status.SUBMITTED,
         verbose_name='Төлөв'
     )
+    reviewers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='assigned_proposals',
+        blank=True,
+        verbose_name='Томилогдсон шүүмжлэгчид'
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Үүсгэсэн огноо')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Шинэчилсэн огноо')
 

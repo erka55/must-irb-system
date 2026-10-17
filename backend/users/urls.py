@@ -1,22 +1,24 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
-
 from .views import (
     CustomTokenObtainPairView,
-    RegisterView,
     UserProfileView,
-    UserViewSet,
+    UserListView,
+    UserDetailView,
 )
 
-router = DefaultRouter()
-# Router prefix-ийг 'all' болгоно -> Бүрэн зам нь: /api/users/all/
-router.register(r'all', UserViewSet, basename='user')
+app_name = 'users'
 
 urlpatterns = [
-    path('register/', RegisterView.as_view(), name='register'),
+    # Токен авах болон шинэчлэх (Login / Refresh)
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('me/', UserProfileView.as_view(), name='user_profile'),
-    path('', include(router.urls)),
+
+    # Одоогийн нэвтэрсэн хэрэглэгчийн профайл татах эндпойнтууд
+    path('me/', UserProfileView.as_view(), name='user_me'),
+    path('profile/', UserProfileView.as_view(), name='user_profile'),
+
+    # Хэрэглэгчдийн удирдлага (List, Create, Detail, Update)
+    path('', UserListView.as_view(), name='user_list'),
+    path('<int:pk>/', UserDetailView.as_view(), name='user_detail'),
 ]

@@ -13,6 +13,7 @@ export interface Proposal {
   review_level_display?: string;
   researcher?: number;
   researcher_name?: string;
+  reviewers?: any[]; //  ЭДГЭЭР ТАЛБАРЫГ НЭМЭВ
   created_at?: string;
   updated_at?: string;
   submitted_at?: string;
@@ -34,7 +35,7 @@ export const getProposals = async (): Promise<Proposal[]> => {
   return response.data;
 };
 
-// 2. Тодорхой нэг хүсэлтийн дэлгэрэнгүйг унших (Дэлгэрэнгүй хуудсанд зориулсан)
+// 2. Тодорхой нэг хүсэлтийн дэлгэрэнгүйг унших
 export const getProposalDetail = async (id: number): Promise<Proposal> => {
   const response = await api.get(`/proposals/${id}/`);
   return response.data;
@@ -67,16 +68,16 @@ export const uploadProposalDocument = async (proposalId: number, file: File, doc
   return response.data;
 };
 
-// 6. Шүүмжлэгч (Reviewer) томилох API
+// 6. Шүүмжлэгч (Reviewer) томилох API (URL зураасыг assign-reviewer болгож засав)
 export const assignReviewer = async (proposalId: number, reviewerId: number) => {
-  const response = await api.post(`/proposals/${proposalId}/assign_reviewer/`, {
+  const response = await api.post(`/proposals/${proposalId}/assign-reviewer/`, {
     reviewer_id: reviewerId,
   });
   return response.data;
 };
 
-// 7. Системийн Шүүмжлэгчдийн (Reviewers) жагсаалтыг авах API
+// 7. Системийн Шүүмжлэгчдийн жагсаалтыг авах API
 export const getReviewers = async () => {
-  const response = await api.get('/users/all/?role=REVIEWER');
+  const response = await api.get('/users/users/?role=REVIEWER');
   return response.data;
 };

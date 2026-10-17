@@ -26,13 +26,21 @@ class Notification(models.Model):
 
         # Шинээр мэдэгдэл үүсэж байгаа бол хэрэглэгчийн и-мэйл рүү давхар илгээнэ
         if is_new and self.recipient.email:
+            # 1. ТЕРМИНАЛ ДЭЭР ЦЭВЭРХЭН КИРИЛЛЭЭР ХАРУУЛАХ
+            print(f"\n================ [EMAIL NOTIFICATION] ================")
+            print(f"To: {self.recipient.email}")
+            print(f"Subject: [MUST IRB] {self.title}")
+            print(f"Message:\n{self.message}")
+            print(f"======================================================\n")
+
+            # 2. И-мэйл илгээх хэсэг
             try:
                 send_mail(
                     subject=f"[MUST IRB] {self.title}",
                     message=self.message,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[self.recipient.email],
-                    fail_silently=True,  # Имэйл илгээхэд алдаа гарсан ч систем гацахгүй
+                    fail_silently=True,
                 )
             except Exception as e:
                 print(f"Имэйл илгээхэд алдаа гарлаа: {e}")

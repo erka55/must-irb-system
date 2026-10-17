@@ -1,171 +1,213 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createProposal, uploadProposalDocument } from '../../../services/proposals';
+import DashboardLayout from '../../../src/components/layout/DashboardLayout';
+import RoleGuard from '../../../src/components/protected/RoleGuard';
+import { createProposal, uploadProposalDocument } from '../../../src/services/proposalService';
 
-export default function NewProposalPage() {
+export default function CreateProposalPage() {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [title, setTitle] = useState('');
-  const [summary, setSummary] = useState('');
-  const [methodology, setMethodology] = useState('');
-  const [file, setFile] = useState<File | null>(null);
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const resetForm = () => {
-    setTitle('');
-    setSummary('');
-    setMethodology('');
-    setFile(null);
-    setError('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
+  // Form states
+  const [formData, setFormData] = useState({
+    title: '',
+    summary: '',
+    methodology: '',
+  });
 
-  const handleCancel = () => {
-    resetForm();
-    router.back();
+  const [protocolFile, setProtocolFile] = useState<File | null>(null);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
+    setError('');
 
     try {
-      // 1. Django Proposal API-д шаардлагатай талбаруудыг илгээх
-      const newProposal = await createProposal({
-        title,
-        summary: summary.trim() || 'Товч хураангуй оруулаагүй',
-        methodology: methodology.trim() || 'Арга зүй оруулаагүй',
-      });
+      // 1. Төслийн үндсэн мэдээллийг үүсгэх
+      const createdProposal = await createProposal(formData);
 
-      // 2. Хэрэв файл сонгосон бол Upload хийнэ
-      if (file && newProposal.id) {
-        await uploadProposalDocument(newProposal.id, file, 'PROTOCOL');
+      // 2. Хэрэв файл хавсаргасан бол сервер рүү хуулах
+      if (protocolFile && createdProposal.id) {
+        await uploadProposalDocument(createdProposal.id, protocolFile, 'PROTOCOL');
       }
 
-      resetForm();
-      router.push('/dashboard');
+      // Амжилттай бол жагсаалт руу шилжих
+      router.push('/proposals');
     } catch (err: any) {
-      console.error('Submit error detail:', err.response?.data || err);
-
-      if (err.response?.data) {
-        if (typeof err.response.data === 'object') {
-          const details = Object.entries(err.response.data)
-            .map(([key, val]) => `${key}: ${Array.isArray(val) ? val.join(', ') : val}`)
-            .join(' | ');
-          setError(details);
-        } else {
-          setError(String(err.response.data));
-        }
-      } else {
-        setError('Сервертэй холбогдоход алдаа гарлаа.');
-      }
+      console.error('Proposal creation error:', err);
+      setError('Төсөл үүсгэхэд алдаа гарлаа. Мэдээллээ шалгаад дахин оролдоно уу.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="mx-auto max-w-3xl rounded-xl bg-white p-8 shadow-sm">
-        <div className="flex items-center justify-between border-b pb-4 mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">
-            Шинэ ёс зүйн хяналтын хүсэлт үүсгэх
-          </h1>
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="text-sm text-gray-500 hover:text-gray-700"
-          >
-            ← Буцах
-          </button>
+    <DashboardLayout>
+      <RoleGuard allowedRoles={['RESEARCHER', 'SYSADMIN']}>
+        <div className="max-w-3xl mx-auto space-y-6">
+          <div>
+            <h1 className="text-xl font-bold text-gray-800">Шинэ судалгааны төсөл мэдүүлэх</h1>
+            <p className="text-sm text-gray-500">Ёс зүйн хорооны хяналтад хамрагдах судалгааны материалуудыг оруулна уу.</p>
+          </div>
+
+          {/* Stepper Wizard */}
+          <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+            <div className={`flex items-center space-x-2 ${step >= 1 ? 'text-indigo-600 font-semibold' : 'text-gray-400'}`}>
+              <span className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-xs">1</span>
+              <span>Ерөнхий мэдээлэл</span>
+            </div>
+            <div className="text-gray-300">→</div>
+            <div className={`flex items-center space-x-2 ${step >= 2 ? 'text-indigo-600 font-semibold' : 'text-gray-400'}`}>
+              <span className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-xs">2</span>
+              <span>Баримт бичиг</span>
+            </div>
+            <div className="text-gray-300">→</div>
+            <div className={`flex items-center space-x-2 ${step >= 3 ? 'text-indigo-600 font-semibold' : 'text-gray-400'}`}>
+              <span className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-xs">3</span>
+              <span>Илгээх</span>
+            </div>
+          </div>
+
+          {error && <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600">{error}</div>}
+
+          <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
+            {/* Step 1: Ерөнхий мэдээлэл */}
+            {step === 1 && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">
+                    Судалгааны төслийн нэр / Сэдэв *
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    required
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                    placeholder="Төслийн бүтэн нэр"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">
+                    Судалгааны хураангуй (Summary) *
+                  </label>
+                  <textarea
+                    name="summary"
+                    rows={4}
+                    required
+                    value={formData.summary}
+                    onChange={handleInputChange}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                    placeholder="Төслийн зорилго, хамрах хүрээ..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">
+                    Судалгааны арга зүй (Methodology) *
+                  </label>
+                  <textarea
+                    name="methodology"
+                    rows={4}
+                    required
+                    value={formData.methodology}
+                    onChange={handleInputChange}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                    placeholder="Судалгаа хийх аргачлал, туршилтын дараалал..."
+                  />
+                </div>
+
+                <div className="flex justify-end pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setStep(2)}
+                    disabled={!formData.title || !formData.summary || !formData.methodology}
+                    className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:bg-gray-300 transition-colors"
+                  >
+                    Дараах: Баримт бичиг →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Баримт бичиг хавсаргах */}
+            {step === 2 && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">
+                    Судалгааны Протокол / Маягт (PDF/Word)
+                  </label>
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={(e) => setProtocolFile(e.target.files?.[0] || null)}
+                    className="w-full rounded-lg border border-gray-300 p-2 text-sm text-gray-600"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">Файлын дээд хэмжээ: 20MB</p>
+                </div>
+
+                <div className="flex justify-between pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setStep(1)}
+                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    ← Буцах
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStep(3)}
+                    className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                  >
+                    Дараах: Хянаж илгээх →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Дүнг хянаад илгээх */}
+            {step === 3 && (
+              <div className="space-y-4">
+                <div className="rounded-lg bg-gray-50 p-4 border border-gray-200 space-y-2">
+                  <p className="text-xs text-gray-500 font-semibold uppercase">Мэдүүлж буй төслийн мэдээлэл:</p>
+                  <p className="text-base font-bold text-gray-800">{formData.title}</p>
+                  <p className="text-sm text-gray-600"><strong>Хураангуй:</strong> {formData.summary}</p>
+                  <p className="text-sm text-gray-600">
+                    <strong>Хавсаргасан файл:</strong> {protocolFile ? protocolFile.name : 'Файл сонгоогүй'}
+                  </p>
+                </div>
+
+                <div className="flex justify-between pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setStep(2)}
+                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    ← Буцах
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="rounded-lg bg-emerald-600 px-6 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition-colors disabled:bg-emerald-400"
+                  >
+                    {loading ? 'Илгээж байна...' : 'Илгээх'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </form>
         </div>
-
-        {error && (
-          <div className="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-600 border border-red-200">
-            <strong>Алдааны мэдээлэл:</strong> {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Судалгааны ажлын нэр / Сэдэв *
-            </label>
-            <input
-              type="text"
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              placeholder="Судалгааны ажлын нэрийг оруулна уу"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Товч хураангуй (Summary) *
-            </label>
-            <textarea
-              rows={3}
-              required
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              placeholder="Судалгааны зорилго, хураангуй агуулга"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Судалгааны арга зүй (Methodology) *
-            </label>
-            <textarea
-              rows={3}
-              required
-              value={methodology}
-              onChange={(e) => setMethodology(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              placeholder="Судалгааны арга зүй, хамрах хүрээ"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Баримт бичиг хавсаргах (PDF, DOCX)
-            </label>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
-              className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-            />
-          </div>
-
-          <div className="flex justify-end space-x-4 pt-4 border-t">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Цуцлах
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="rounded-lg bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-            >
-              {loading ? 'Илгээж байна...' : 'Хүсэлт илгээх'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </RoleGuard>
+    </DashboardLayout>
   );
 }
