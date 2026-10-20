@@ -1,80 +1,78 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, UserRole } from '../types/auth';
-import api from '../../lib/api';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
+
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+  is_superuser?: boolean;
+  is_staff?: boolean;
+}
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   loading: boolean;
-  isAuthenticated: boolean;
-  login: (token: string, userData: User) => void;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => void;
-  hasRole: (roles: UserRole[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-
-    if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-        api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-      } catch (e) {
-        console.error('Failed to parse stored user:', e);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+    const checkAuth = async () => {
+      // localStorage-ийн оронд sessionStorage ашиглана
+      const token = sessionStorage.getItem('access_token');
+      if (token) {
+        try {
+          const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api'}/users/me/`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setUser(res.data);
+        } catch (err) {
+          sessionStorage.removeItem('access_token');
+          sessionStorage.removeItem('refresh_token');
+          setUser(null);
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+
+    checkAuth();
   }, []);
 
-  const login = (newToken: string, userData: User) => {
-    // Хуучин кэшийг арилгах
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+  const login = async (username: string, password: string) => {
+    const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api'}/token/`, {
+      username,
+      password,
+    });
 
-    // Шинэ токен ба хэрэглэгчийг хадгалах
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify(userData));
-    api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+    // Токенуудыг sessionStorage-д хадгална
+    sessionStorage.setItem('access_token', res.data.access);
+    sessionStorage.setItem('refresh_token', res.data.refresh);
 
-    setToken(newToken);
-    setUser(userData);
+    // Нэвтэрсэн хэрэглэгчийн мэдээллийг авах
+    const userRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api'}/users/me/`, {
+      headers: { Authorization: `Bearer ${res.data.access}` },
+    });
+
+    setUser(userRes.data);
   };
 
   const logout = () => {
-    // 1. Хэрэглэгчийн бүх кэшийг цэвэрлэх
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    delete api.defaults.headers.common['Authorization'];
-
-    setToken(null);
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('refresh_token');
     setUser(null);
-
-    // 2. Шууд hard refresh хийж login руу шилжүүлэх
-    window.location.href = '/login';
   };
-
-  const hasRole = (roles: UserRole[]): boolean => {
-    if (!user) return false;
-    return roles.includes(user.role);
-  };
-
-  const isAuthenticated = !!token && !!user;
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, isAuthenticated, login, logout, hasRole }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

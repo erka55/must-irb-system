@@ -1,31 +1,26 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-class UserRegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, min_length=6)
-
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name', 'role', 'phone_number', 'department')
-
-    def create(self, validated_data):
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data.get('email', ''),
-            password=validated_data['password'],
-            first_name=validated_data.get('first_name', ''),
-            last_name=validated_data.get('last_name', ''),
-            role=validated_data.get('role', User.Role.RESEARCHER),
-            phone_number=validated_data.get('phone_number', ''),
-            department=validated_data.get('department', '')
-        )
-        return user
-
+# 1. Зайлшгүй шаардлагатай UserSerializer
 class UserSerializer(serializers.ModelSerializer):
-    role_display = serializers.CharField(source='get_role_display', read_only=True)
-
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'role', 'role_display', 'phone_number', 'department')
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'role']
+        read_only_fields = ['id']
+
+# 2. JWT Токений Payload дээр хэрэглэгчийн мэдээллийг данхах Serializer
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data['user'] = {
+            'id': self.user.id,
+            'username': self.user.username,
+            'email': self.user.email,
+            'role': getattr(self.user, 'role', 'RESEARCHER'),
+            'first_name': self.user.first_name,
+            'last_name': self.user.last_name,
+        }
+        return data

@@ -1,5 +1,10 @@
-import { AuthProvider } from '../src/context/AuthContext';
-import './globals.css'; // эсвэл танай globals.css-ийн зам
+import { AuthProvider } from '@/context/AuthContext';
+import './globals.css';
+
+export const metadata = {
+  title: 'MUST IRB System',
+  description: 'ШУТИС-ийн Ёс зүйн хорооны систем',
+};
 
 export default function RootLayout({
   children,
