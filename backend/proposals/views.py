@@ -91,16 +91,19 @@ class ProposalViewSet(viewsets.ModelViewSet):
             reviewer = User.objects.get(id=reviewer_id)
         except User.DoesNotExist:
             return Response(
-                {"error": "Сонгосон шүүмжлэгч хэрэглэгч олдсонгүй."},
+                {"error": "Сонгосон шүүмжлэгч олдсонгүй."},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+        # Шүүмжлэгчийг proposal-д нэмэх (ManyToMany)
         proposal.reviewers.add(reviewer)
 
+        # Статусыг хянагдаж байгаа (UNDER_REVIEW) болгох
         if hasattr(proposal, "status") and proposal.status != "UNDER_REVIEW":
             proposal.status = "UNDER_REVIEW"
             proposal.save()
 
+        # Мэдэгдэл үүсгэх
         try:
             Notification.objects.create(
                 recipient=reviewer,

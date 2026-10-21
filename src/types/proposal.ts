@@ -30,3 +30,10 @@ export interface Proposal {
   reviews?: any[];
   final_decisions?: any[];
 }
+
+// Нэмэгдсэн интерфейс:
+export interface CreateProposalData {
+  title: string;
+  summary: string;
+  methodology?: string;
+}

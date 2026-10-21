@@ -1,12 +1,12 @@
-import api from '../../lib/api';
+import api from './proposalService';
 import { User } from '../types/auth';
 
 export const getReviewers = async (): Promise<User[]> => {
-  const response = await api.get('/users/users/?role=REVIEWER');
+  const response = await api.get('/proposals/reviewers/');
   return response.data;
 };
 
 export const getUsers = async (): Promise<User[]> => {
-  const response = await api.get('/users/users/');
+  const response = await api.get('/users/');
   return response.data;
 };
