@@ -8,6 +8,7 @@ import { getProposalById } from "@/services/proposalService";
 import { Proposal } from "@/types/proposal";
 import { useAuth } from "@/context/AuthContext";
 import ReviewerManagement from "./ReviewerManagement";
+import { DocumentsList } from "./DocumentsList";
 
 export function ProposalDetailView({ id }: { id: string }) {
   const router = useRouter();
@@ -79,7 +80,7 @@ export function ProposalDetailView({ id }: { id: string }) {
                   </div>
                 </div>
 
-                {/* ТУСГААРЛАСАН ШҮҮМЖЛЭГЧИЙН КОМПОНЕНТ */}
+                {/* ШҮҮМЖЛЭГЧИЙН УДИРДЛАГА */}
                 <ReviewerManagement
                   proposalId={id}
                   currentReviewers={proposal.reviewers || []}
@@ -87,42 +88,8 @@ export function ProposalDetailView({ id }: { id: string }) {
                   onUpdate={fetchProposal}
                 />
 
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2 mt-6">Хавсаргасан баримт бичгүүд (Протокол / Маягт)</h3>
-                  {proposal.documents && proposal.documents.length > 0 ? (
-                    <ul className="divide-y divide-gray-200 border rounded-md bg-white">
-                      {proposal.documents.map((doc, index) => {
-                        const fileName = doc.document_type_display || `Баримт бичиг ${index + 1}`;
-                        return (
-                          <li key={doc.id || index} className="p-3 flex justify-between items-center text-sm hover:bg-gray-50">
-                            <div>
-                              <span className="text-gray-800 font-medium">{fileName}</span>
-                              {doc.uploaded_at && (
-                                <span className="block text-xs text-gray-400 mt-0.5">
-                                  Хуулсан: {new Date(doc.uploaded_at).toLocaleDateString()}
-                                </span>
-                              )}
-                            </div>
-                            {doc.file ? (
-                              <a
-                                href={doc.file}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="px-3 py-1.5 bg-blue-50 text-blue-600 font-medium text-xs rounded hover:bg-blue-100 transition-colors"
-                              >
-                                Татах / Харах
-                              </a>
-                            ) : (
-                              <span className="text-gray-400 italic text-xs">Файл байхгүй</span>
-                            )}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-gray-500 italic p-3 bg-gray-50 rounded border">Хавсаргасан баримт бичиг байхгүй байна.</p>
-                  )}
-                </div>
+                {/* БАРИМТ БИЧГИЙН МОДУЛЬ (Хуулах, устгах, татах үйлдэлтэй) */}
+                <DocumentsList proposalId={id} status={proposal.status} />
               </div>
             </div>
           )}

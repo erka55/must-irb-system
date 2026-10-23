@@ -20,26 +20,35 @@ class ProposalViewSet(viewsets.ModelViewSet):
         user = self.request.user
 
         # Нэвтрээгүй хэрэглэгчид юу ч харуулахгүй
-        if not user.is_authenticated:
+        if not user or user.is_anonymous or not user.is_authenticated:
             return Proposal.objects.none()
 
-        # Дарга, Нарийн бичиг бүх төслийг харна (Админыг хассан)
-        if getattr(user, "role", "") in [
-            "CHAIR",
-            "SECRETARY",
-            "SECRETARY_CHAIR",
-        ]:
-            return Proposal.objects.all().order_by("-created_at")
+        base_queryset = Proposal.objects.prefetch_related(
+            "reviewers", "reviews", "documents"
+        ).order_by("-created_at")
 
-        # Судлаач зөвхөн өөрийн оруулсан төслөө харна
-        if getattr(user, "role", "") == "RESEARCHER":
-            return Proposal.objects.filter(researcher=user).order_by("-created_at")
+        # Төслийн дэлгэрэнгүй хуудсыг шууд ID-гаар харах үед (retrieve action)
+        if self.action == "retrieve":
+            return base_queryset
 
-        # Шүүмжлэгч ЗӨВХӨН өөрт нь хуваарилагдсан төслүүдийг харна
-        if getattr(user, "role", "") == "REVIEWER":
-            return Proposal.objects.filter(reviewers=user).order_by("-created_at")
+        user_role = str(getattr(user, "role", "")).upper()
 
-        # Админ болон бусад эрхгүй хэрэглэгчдэд юу ч харуулахгүй
+        # 1. Дарга, Нарийн бичиг, Супер хэрэглэгч нар НООРОГ (DRAFT)-аас бусад
+        # албан ёсоор илгээгдсэн бүх төслийг харна.
+        if user.is_superuser or user_role in ["SECRETARY", "CHAIR", "SECRETARY_CHAIR"]:
+            return base_queryset.exclude(status="DRAFT")
+
+        # 2. Шүүмжлэгч (REVIEWER): Өөрт нь томилогдсон ЭСВЭЛ өөрийнх нь үүсгэсэн төслүүдийг харна
+        if user_role == "REVIEWER":
+            return base_queryset.filter(
+                Q(reviewers=user) | Q(researcher=user)
+            ).distinct()
+
+        # 3. Судлаач (RESEARCHER): Өөрийн үүсгэсэн бүх төслийг (DRAFT-тайгаа) харна
+        if user_role == "RESEARCHER":
+            return base_queryset.filter(researcher=user)
+
+        # Бусад эрхгүй хэрэглэгчдэд хоосон буцаана
         return Proposal.objects.none()
 
     def perform_create(self, serializer):

@@ -73,4 +73,16 @@ export const assignReviewer = async (proposalId: number | string, reviewerId: nu
   return res.data;
 };
 
+// 7. Тухайн төслийн баримт бичгүүдийг татах
+export const getProposalDocuments = async (proposalId: string | number) => {
+  const res = await api.get(`/documents/?proposal=${proposalId}`);
+  return res.data;
+};
+
+// 8. Баримт бичиг устгах
+export const deleteProposalDocument = async (docId: number) => {
+  const res = await api.delete(`/documents/${docId}/`);
+  return res.data;
+};
+
 export default api;

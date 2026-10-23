@@ -36,7 +36,7 @@ class Proposal(models.Model):
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
-        default=Status.SUBMITTED,
+        default=Status.DRAFT,
         verbose_name='Төлөв'
     )
     reviewers = models.ManyToManyField(
