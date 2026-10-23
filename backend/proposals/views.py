@@ -116,6 +116,40 @@ class ProposalViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(proposal)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=['post'], url_path='remove-reviewer', permission_classes=[permissions.IsAuthenticated])
+    def remove_reviewer(self, request, pk=None):
+        proposal = self.get_object()
+
+        # Зөвхөн Нарийн бичиг, Дарга эсвэл Админ хасах эрхтэй
+        if request.user.role not in [User.Role.SECRETARY, User.Role.CHAIR] and not request.user.is_staff:
+            return Response(
+                {"error": "Зөвхөн Нарийн бичиг болон Дарга шүүмжлэгчийг хасах эрхтэй."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        reviewer_id = request.data.get('reviewer_id')
+        if not reviewer_id:
+            return Response({"error": "reviewer_id шаардлагатай."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            reviewer = User.objects.get(id=reviewer_id)
+        except User.DoesNotExist:
+            return Response({"error": "Заасан ID-тай шүүмжлэгч олдсонгүй."}, status=status.HTTP_404_NOT_FOUND)
+
+        # 1. Review моделиос устгах (хэрэв байгаа бол)
+        from reviews.models import Review
+        Review.objects.filter(proposal=proposal, reviewer=reviewer).delete()
+
+        # 2. Proposal-ийн reviewers M2M талбараас хасах (хэрэв байгаа бол)
+        if hasattr(proposal, 'reviewers'):
+            proposal.reviewers.remove(reviewer)
+
+        # Төслийн төлөвийг шинэчлэх (Хэрэв ямар ч шүүмжлэгч үлдээгүй бол төлөвийг буцааж SUBMITTED болгож болно)
+        if hasattr(proposal, 'reviewers') and proposal.reviewers.count() == 0:
+            proposal.status = Proposal.Status.SUBMITTED
+            proposal.save()
+
+        return Response({"detail": "Шүүмжлэгч амжилттай хасагдлаа."}, status=status.HTTP_200_OK)
 
 class ProposalDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Proposal.objects.all()
