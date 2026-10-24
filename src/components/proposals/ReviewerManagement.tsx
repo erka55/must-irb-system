@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 interface Reviewer {
-  id: number;
+  id: number | string;
   username: string;
   first_name: string;
   last_name: string;
@@ -17,19 +17,14 @@ interface ReviewerManagementProps {
   onUpdate: () => void;
 }
 
-export default function ReviewerManagement({
-  proposalId,
-  currentReviewers,
-  userRole,
-  onUpdate
-}: ReviewerManagementProps) {
+export default function ReviewerManagement({ proposalId, currentReviewers, userRole, onUpdate }: ReviewerManagementProps) {
   const [availableReviewers, setAvailableReviewers] = useState<Reviewer[]>([]);
-  const [selectedReviewerId, setSelectedReviewerId] = useState<string>('');
+  const [selectedReviewerId, setSelectedReviewerId] = useState<string>("");
   const [actionLoading, setActionLoading] = useState(false);
 
   // Зөвхөн Дарга болон Нарийн бичигт томилох/хасах эрх нээнэ
   const userRoleUpper = userRole?.toUpperCase();
-  const canManage = userRoleUpper === 'CHAIR' || userRoleUpper === 'SECRETARY' || userRoleUpper === 'SECRETARY_CHAIR';
+  const canManage = userRoleUpper === "CHAIR" || userRoleUpper === "SECRETARY" || userRoleUpper === "SECRETARY_CHAIR";
 
   useEffect(() => {
     if (canManage) {
@@ -39,11 +34,11 @@ export default function ReviewerManagement({
 
   const fetchAvailableReviewers = async () => {
     try {
-      const token = sessionStorage.getItem('access_token');
-      const res = await fetch('http://127.0.0.1:8000/api/proposals/reviewers/', {
+      const token = sessionStorage.getItem("access_token");
+      const res = await fetch("http://127.0.0.1:8000/api/proposals/reviewers/", {
         headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-          'Content-Type': 'application/json',
+          Authorization: token ? `Bearer ${token}` : "",
+          "Content-Type": "application/json",
         },
       });
       if (res.ok) {
@@ -51,67 +46,67 @@ export default function ReviewerManagement({
         setAvailableReviewers(data);
       }
     } catch (err) {
-      console.error('Error fetching reviewers:', err);
+      console.error("Error fetching reviewers:", err);
     }
   };
 
   const handleAssign = async () => {
     if (!selectedReviewerId) {
-      alert('Шүүмжлэгч сонгоно уу!');
+      alert("Шүүмжлэгч сонгоно уу!");
       return;
     }
     setActionLoading(true);
     try {
-      const token = sessionStorage.getItem('access_token');
+      const token = sessionStorage.getItem("access_token");
       const res = await fetch(`http://127.0.0.1:8000/api/proposals/${proposalId}/assign-reviewer/`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-          'Content-Type': 'application/json',
+          Authorization: token ? `Bearer ${token}` : "",
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ reviewer_id: selectedReviewerId }),
       });
 
       if (res.ok) {
-        alert('Шүүмжлэгч амжилттай томилогдлоо.');
-        setSelectedReviewerId('');
+        alert("Шүүмжлэгч амжилттай томилогдлоо.");
+        setSelectedReviewerId("");
         onUpdate();
       } else {
         const errData = await res.json();
-        alert(errData.error || errData.detail || 'Томилоход алдаа гарлаа.');
+        alert(errData.error || errData.detail || "Томилоход алдаа гарлаа.");
       }
     } catch (err) {
-      console.error('Assign reviewer error:', err);
-      alert('Сүлжээний алдаа гарлаа.');
+      console.error("Assign reviewer error:", err);
+      alert("Сүлжээний алдаа гарлаа.");
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleRemove = async (reviewerId: number) => {
-    if (!confirm('Энэ шүүмжлэгчийг төслөөс хасахдаа итгэлтэй байна уу?')) return;
+  const handleRemove = async (reviewerId: number | string) => {
+    if (!confirm("Энэ шүүмжлэгчийг төслөөс хасахдаа итгэлтэй байна уу?")) return;
     setActionLoading(true);
     try {
-      const token = sessionStorage.getItem('access_token');
+      const token = sessionStorage.getItem("access_token");
       const res = await fetch(`http://127.0.0.1:8000/api/proposals/${proposalId}/remove-reviewer/`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-          'Content-Type': 'application/json',
+          Authorization: token ? `Bearer ${token}` : "",
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ reviewer_id: reviewerId }),
       });
 
       if (res.ok) {
-        alert('Шүүмжлэгч амжилттай хасагдлаа.');
+        alert("Шүүмжлэгч амжилттай хасагдлаа.");
         onUpdate();
       } else {
         const errData = await res.json();
-        alert(errData.error || errData.detail || 'Хасахад алдаа гарлаа.');
+        alert(errData.error || errData.detail || "Хасахад алдаа гарлаа.");
       }
     } catch (err) {
-      console.error('Remove reviewer error:', err);
-      alert('Сүлжээний алдаа гарлаа.');
+      console.error("Remove reviewer error:", err);
+      alert("Сүлжээний алдаа гарлаа.");
     } finally {
       setActionLoading(false);
     }
@@ -120,7 +115,7 @@ export default function ReviewerManagement({
   return (
     <div className="border-t pt-4 mt-6">
       <h3 className="text-sm font-semibold text-gray-700 mb-2">Хуваарилагдсан шүүмжлэгчид</h3>
-      
+
       {currentReviewers && currentReviewers.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {currentReviewers.map((reviewer) => (
@@ -144,9 +139,7 @@ export default function ReviewerManagement({
           ))}
         </div>
       ) : (
-        <p className="text-sm text-gray-500 italic p-3 bg-gray-50 rounded border">
-          Одоогоор шүүмжлэгч томилогдоогүй байна.
-        </p>
+        <p className="text-sm text-gray-500 italic p-3 bg-gray-50 rounded border">Одоогоор шүүмжлэгч томилогдоогүй байна.</p>
       )}
 
       {canManage && (
@@ -170,7 +163,7 @@ export default function ReviewerManagement({
               disabled={actionLoading || !selectedReviewerId}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded transition-colors disabled:opacity-50 shrink-0"
             >
-              {actionLoading ? 'Уншиж байна...' : 'Томилох'}
+              {actionLoading ? "Уншиж байна..." : "Томилох"}
             </button>
           </div>
         </div>

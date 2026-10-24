@@ -82,9 +82,15 @@ class ProposalViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="assign-reviewer")
     def assign_reviewer(self, request, pk=None):
         # Зөвхөн Нарийн бичиг, Дарга томилох эрхтэй
-        if getattr(request.user, "role", "") not in ["CHAIR", "SECRETARY", "SECRETARY_CHAIR"]:
+        if getattr(request.user, "role", "") not in [
+            "CHAIR",
+            "SECRETARY",
+            "SECRETARY_CHAIR",
+        ]:
             return Response(
-                {"error": "Зөвхөн Нарийн бичиг болон Дарга шүүмжлэгчийг томилох эрхтэй."},
+                {
+                    "error": "Зөвхөн Нарийн бичиг болон Дарга шүүмжлэгчийг томилох эрхтэй."
+                },
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -108,7 +114,9 @@ class ProposalViewSet(viewsets.ModelViewSet):
         # --- АШИГ СОНИРХЛЫН ЗӨРЧЛИЙН ШАЛГАЛТ (COI Check) ---
         if proposal.researcher_id == reviewer.id:
             return Response(
-                {"error": "Ашиг сонирхлын зөрчил: Судлаач өөрийн оруулсан төсөлд шүүмжлэгчээр томилогдох боломжгүй!"},
+                {
+                    "error": "Ашиг сонирхлын зөрчил: Судлаач өөрийн оруулсан төсөлд шүүмжлэгчээр томилогдох боломжгүй!"
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
         # ---------------------------------------------------
@@ -144,7 +152,11 @@ class ProposalViewSet(viewsets.ModelViewSet):
         proposal = self.get_object()
 
         # Зөвхөн Нарийн бичиг, Дарга хасах эрхтэй (Админыг хассан)
-        if getattr(request.user, "role", "") not in ["CHAIR", "SECRETARY", "SECRETARY_CHAIR"]:
+        if getattr(request.user, "role", "") not in [
+            "CHAIR",
+            "SECRETARY",
+            "SECRETARY_CHAIR",
+        ]:
             return Response(
                 {"error": "Зөвхөн Нарийн бичиг болон Дарга шүүмжлэгчийг хасах эрхтэй."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -181,6 +193,39 @@ class ProposalViewSet(viewsets.ModelViewSet):
 
         return Response(
             {"detail": "Шүүмжлэгч амжилттай хасагдлаа."}, status=status.HTTP_200_OK
+        )
+
+    @action(detail=True, methods=["post"], url_path="submit")
+    def submit_proposal(self, request, pk=None):
+        """Ноорог (DRAFT) эсвэл засварт буцсан (REVISION_REQUIRED) төслийг албан ёсоор илгээх"""
+        proposal = self.get_object()
+
+        # Зөвхөн Судлаач өөрөө л төслөө илгээх эрхтэй
+        if request.user != proposal.researcher:
+            return Response(
+                {"detail": "Та зөвхөн өөрийн үүсгэсэн төслийг илгээх эрхтэй."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Зөвхөн DRAFT эсвэл REVISION_REQUIRED үед л илгээж болно
+        if proposal.status not in ["DRAFT", "REVISION_REQUIRED"]:
+            return Response(
+                {
+                    "detail": f"Энэ төслийг илгээх боломжгүй (Одоогийн төлөв: {proposal.get_status_display()})."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Төлөвийг SUBMITTED болгож хадгалах
+        proposal.status = "SUBMITTED"
+        proposal.save()
+
+        return Response(
+            {
+                "detail": "Төсөл амжилттай илгээгдлээ. Нарийн бичиг шалгаж эхлэх болно.",
+                "status": proposal.status,
+            },
+            status=status.HTTP_200_OK,
         )
 
 

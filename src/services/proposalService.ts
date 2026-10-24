@@ -85,4 +85,10 @@ export const deleteProposalDocument = async (docId: number) => {
   return res.data;
 };
 
+// 9. Ноорог төслийг албан ёсоор илгээх
+export const submitProposal = async (proposalId: number | string) => {
+  const res = await api.post(`/proposals/${proposalId}/submit/`);
+  return res.data;
+};
+
 export default api;

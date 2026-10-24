@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { RoleGuard } from "@/components/protected/RoleGuard";
-import { getProposalById } from "@/services/proposalService";
+import { getProposalById, submitProposal } from "@/services/proposalService";
 import { Proposal } from "@/types/proposal";
 import { useAuth } from "@/context/AuthContext";
 import ReviewerManagement from "./ReviewerManagement";
@@ -17,6 +17,7 @@ export function ProposalDetailView({ id }: { id: string }) {
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false); // Илгээх төлөв
 
   const fetchProposal = async () => {
     try {
@@ -36,6 +37,26 @@ export function ProposalDetailView({ id }: { id: string }) {
     }
   }, [id]);
 
+  // Төсөл илгээх функц
+  const handleSubmitProposal = async () => {
+    if (!confirm("Төслийг албан ёсоор илгээх үү? Илгээсний дараа баримт бичигт өөрчлөлт оруулах боломжгүй болно.")) return;
+
+    try {
+      setIsSubmitting(true);
+      await submitProposal(id);
+      alert("Төсөл амжилттай илгээгдлээ!");
+
+      // Төслийн мэдээллийг дахин татаж шинэчлэх (статус нь SUBMITTED болно)
+      const updatedData = await getProposalById(id);
+      setProposal(updatedData);
+    } catch (err: any) {
+      console.error(err);
+      alert(err.response?.data?.detail || "Төслийг илгээхэд алдаа гарлаа.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <RoleGuard allowedRoles={["RESEARCHER", "REVIEWER", "CHAIR", "SECRETARY", "ADMIN"]}>
       <DashboardLayout>
@@ -54,6 +75,7 @@ export function ProposalDetailView({ id }: { id: string }) {
                 >
                   ← Буцах
                 </button>
+
                 <div className="flex justify-between items-start gap-4">
                   <div>
                     <h1 className="text-2xl font-bold text-gray-900">{proposal.title}</h1>
@@ -66,9 +88,23 @@ export function ProposalDetailView({ id }: { id: string }) {
                       </p>
                     )}
                   </div>
-                  <span className="px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800 shrink-0">
-                    {proposal.status_display || proposal.status}
-                  </span>
+
+                  <div className="flex flex-col items-end gap-2">
+                    <span className="px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800 shrink-0">
+                      {proposal.status_display || proposal.status}
+                    </span>
+
+                    {/* ЗӨВХӨН Судлаач өөрөө, мөн DRAFT эсвэл REVISION_REQUIRED үед л илгээх товч харагдана */}
+                    {user?.id === proposal.researcher && (proposal.status === "DRAFT" || proposal.status === "REVISION_REQUIRED") && (
+                      <button
+                        onClick={handleSubmitProposal}
+                        disabled={isSubmitting}
+                        className="mt-2 bg-green-600 text-white px-4 py-2 rounded-md font-semibold text-sm hover:bg-green-700 disabled:opacity-50 transition-colors shadow-sm"
+                      >
+                        {isSubmitting ? "Илгээж байна..." : "Төслийг илгээх (Submit)"}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -88,7 +124,7 @@ export function ProposalDetailView({ id }: { id: string }) {
                   onUpdate={fetchProposal}
                 />
 
-                {/* БАРИМТ БИЧГИЙН МОДУЛЬ (Хуулах, устгах, татах үйлдэлтэй) */}
+                {/* БАРИМТ БИЧГИЙН МОДУЛЬ */}
                 <DocumentsList proposalId={id} status={proposal.status} />
               </div>
             </div>
