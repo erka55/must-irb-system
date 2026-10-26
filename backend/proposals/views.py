@@ -33,10 +33,12 @@ class ProposalViewSet(viewsets.ModelViewSet):
 
         user_role = str(getattr(user, "role", "")).upper()
 
-        # 1. Дарга, Нарийн бичиг, Супер хэрэглэгч нар НООРОГ (DRAFT)-аас бусад
-        # албан ёсоор илгээгдсэн бүх төслийг харна.
+        # 1. Дарга, Нарийн бичиг, Супер хэрэглэгч нар:
+        # Өөрийн үүсгэсэн БҮХ төслийг (DRAFT байсан ч) БОЛОН бусдын албан ёсоор илгээсэн (DRAFT-аас бусад) төслүүдийг харна.
         if user.is_superuser or user_role in ["SECRETARY", "CHAIR", "SECRETARY_CHAIR"]:
-            return base_queryset.exclude(status="DRAFT")
+            return base_queryset.filter(
+                Q(researcher=user) | ~Q(status="DRAFT")
+            ).distinct()
 
         # 2. Шүүмжлэгч (REVIEWER): Өөрт нь томилогдсон ЭСВЭЛ өөрийнх нь үүсгэсэн төслүүдийг харна
         if user_role == "REVIEWER":

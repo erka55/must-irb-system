@@ -91,4 +91,15 @@ export const submitProposal = async (proposalId: number | string) => {
   return res.data;
 };
 
+// 10. Ноорог төслийг устгах
+export const deleteProposal = async (id: string | number): Promise<void> => {
+  await api.delete(`/proposals/${id}/`);
+};
+
+// 11. Төслийн мэдээлэл шинэчлэх (Засах)
+export const updateProposal = async (id: string | number, data: { title?: string, summary?: string }): Promise<Proposal> => {
+  const res = await api.patch(`/proposals/${id}/`, data);
+  return res.data;
+};
+
 export default api;

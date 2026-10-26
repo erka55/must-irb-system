@@ -16,7 +16,6 @@ export default function NewProposalPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Талбарууд болон файл оруулах хэсгийг бүрэн цэвэрлэх функц
   const resetForm = () => {
     setTitle("");
     setSummary("");
@@ -27,7 +26,6 @@ export default function NewProposalPage() {
     }
   };
 
-  // Хуудас ачаалагдах болон дахин орох бүрт талбаруудыг бүрэн цэвэрлэнэ
   useEffect(() => {
     resetForm();
   }, []);
@@ -44,31 +42,27 @@ export default function NewProposalPage() {
     setLoading(true);
 
     try {
-      // 1. Төслийн үндсэн мэдээллийг үүсгэх
       const newProposal = await createProposal({
         title: title.trim(),
         summary: summary.trim(),
         methodology: "Хавсралт файлд дэлгэрэнгүй тусгагдсан",
       });
 
-      // 2. Файл сонгогдсон бол хуулах API-г дуудах
       if (file && newProposal && newProposal.id) {
-        await uploadProposalDocument(newProposal.id, file, 'PROTOCOL');
+        await uploadProposalDocument(newProposal.id, file, "PROTOCOL");
       }
 
-      // Төсөл амжилттай үүссэний дараа бүх талбарыг арилгана
       resetForm();
-
       alert("Шинэ судалгааны төсөл амжилттай үүсгэгдлээ!");
       router.push("/proposals");
     } catch (err: any) {
       console.error("Submit error detail:", err.response?.data || err);
-      
+
       const backendError = err.response?.data;
-      if (backendError && typeof backendError === 'object') {
+      if (backendError && typeof backendError === "object") {
         const details = Object.entries(backendError)
-          .map(([key, val]) => `${key}: ${Array.isArray(val) ? val.join(', ') : val}`)
-          .join(' | ');
+          .map(([key, val]) => `${key}: ${Array.isArray(val) ? val.join(", ") : val}`)
+          .join(" | ");
         setError(`Алдаа: ${details}`);
       } else {
         setError("Төсөл үүсгэх эсвэл файл хуулахад алдаа гарлаа.");
@@ -79,7 +73,7 @@ export default function NewProposalPage() {
   };
 
   return (
-    <RoleGuard allowedRoles={["RESEARCHER", "SECRETARY", "CHAIR"]}>
+    <RoleGuard allowedRoles={["RESEARCHER", "REVIEWER", "CHAIR", "SECRETARY"]}>
       <DashboardLayout>
         <div className="p-6 max-w-3xl mx-auto">
           <button
@@ -91,15 +85,9 @@ export default function NewProposalPage() {
           </button>
 
           <div className="bg-white rounded-lg shadow p-6 space-y-6 border">
-            <h1 className="text-2xl font-bold text-gray-800 border-b pb-4">
-              Шинэ судалгааны төсөл бүртгэх
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-800 border-b pb-4">Шинэ судалгааны төсөл бүртгэх</h1>
 
-            {error && (
-              <div className="p-3 text-sm text-red-700 bg-red-100 rounded border border-red-200">
-                {error}
-              </div>
-            )}
+            {error && <div className="p-3 text-sm text-red-700 bg-red-100 rounded border border-red-200">{error}</div>}
 
             <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">
               <div>
