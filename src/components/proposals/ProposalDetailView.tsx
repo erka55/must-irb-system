@@ -8,16 +8,17 @@ import { getProposalById, submitProposal, deleteProposal, updateProposal } from 
 import { Proposal } from "@/types/proposal";
 import { useAuth } from "@/context/AuthContext";
 import ReviewerManagement from "./ReviewerManagement";
+import ReviewEvaluation from "./ReviewEvaluation";
 import { DocumentsList } from "./DocumentsList";
 
-export default function ProposalDetailView({ id }: { id: string }) {
+export function ProposalDetailView({ id }: { id: string }) {
   const router = useRouter();
   const { user } = useAuth();
 
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -91,12 +92,12 @@ export default function ProposalDetailView({ id }: { id: string }) {
 
   const handleDeleteProposal = async () => {
     if (!confirm("Энэхүү ноорог төслийг бүрмөсөн устгахдаа итгэлтэй байна уу?")) return;
-    
+
     try {
       setIsDeleting(true);
-      await deleteProposal(id); 
+      await deleteProposal(id);
       alert("Төсөл амжилттай устгагдлаа.");
-      router.push("/proposals"); 
+      router.push("/proposals");
     } catch (err: any) {
       console.error(err);
       alert(err.response?.data?.error || "Төслийг устгахад алдаа гарлаа.");
@@ -154,15 +155,17 @@ export default function ProposalDetailView({ id }: { id: string }) {
                     </span>
 
                     <div className="flex gap-2 mt-2">
-                      {user?.id === proposal.researcher && (proposal.status === "DRAFT" || proposal.status === "REVISION_REQUIRED") && !isEditing && (
-                        <button
-                          onClick={handleSubmitProposal}
-                          disabled={isSubmitting || isDeleting}
-                          className="bg-green-600 text-white px-4 py-2 rounded-md font-semibold text-sm hover:bg-green-700 disabled:opacity-50 transition-colors shadow-sm"
-                        >
-                          {isSubmitting ? "Илгээж байна..." : "Төслийг илгээх (Submit)"}
-                        </button>
-                      )}
+                      {user?.id === proposal.researcher &&
+                        (proposal.status === "DRAFT" || proposal.status === "REVISION_REQUIRED") &&
+                        !isEditing && (
+                          <button
+                            onClick={handleSubmitProposal}
+                            disabled={isSubmitting || isDeleting}
+                            className="bg-green-600 text-white px-4 py-2 rounded-md font-semibold text-sm hover:bg-green-700 disabled:opacity-50 transition-colors shadow-sm"
+                          >
+                            {isSubmitting ? "Илгээж байна..." : "Төслийг илгээх (Submit)"}
+                          </button>
+                        )}
 
                       {user?.id === proposal.researcher && proposal.status === "DRAFT" && (
                         <>
@@ -211,7 +214,7 @@ export default function ProposalDetailView({ id }: { id: string }) {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Товч агуулга / Хураангуй</h3>
-                  
+
                   {/* ХУРААНГУЙ ЗАСАХ ХЭСЭГ */}
                   {isEditing ? (
                     <textarea
@@ -236,6 +239,23 @@ export default function ProposalDetailView({ id }: { id: string }) {
                     onUpdate={fetchProposal}
                   />
                 )}
+
+                {/* ШҮҮМЖЛЭГЧИЙН ДҮГНЭЛТ ОРУУЛАХ ХЭСЭГ */}
+                {(() => {
+                  // 1. Хэрэглэгчийн эрх нь Дарга, Нарийн бичиг эсвэл Шүүмжлэгч эсэхийг шалгах
+                  const isAuthorizedRole = ["REVIEWER", "CHAIR", "SECRETARY"].includes(user?.role);
+
+                  // 2. Ямар ч дүр байсан ЗААВАЛ тухайн төсөлд шүүмжлэгчээр хуваарилагдсан байх ёстой.
+                  // (ID-уудыг String руу хөрвүүлж харьцуулах нь төрлийн алдаанаас сэргийлнэ)
+                  const isAssignedReviewer = proposal.reviewers?.some((reviewer: any) => String(reviewer.id) === String(user?.id));
+
+                  // 3. Төслийн төлөв нь "UNDER_REVIEW" (Шүүмжид байгаа) эсэхийг шалгах
+                  const isUnderReview = proposal.status === "UNDER_REVIEW";
+
+                  return isAuthorizedRole && isAssignedReviewer && isUnderReview ? (
+                    <ReviewEvaluation proposalId={id} onUpdate={fetchProposal} />
+                  ) : null;
+                })()}
 
                 {/* БАРИМТ БИЧГИЙН МОДУЛЬ */}
                 <DocumentsList proposalId={id} status={proposal.status} />

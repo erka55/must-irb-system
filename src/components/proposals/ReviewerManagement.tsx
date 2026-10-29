@@ -35,7 +35,8 @@ export default function ReviewerManagement({ proposalId, currentReviewers, userR
   const fetchAvailableReviewers = async () => {
     try {
       const token = sessionStorage.getItem("access_token");
-      const res = await fetch("http://127.0.0.1:8000/api/proposals/reviewers/", {
+      // Хаягийг /api/users/?role=REVIEWER болгож өөрчлөв
+      const res = await fetch("http://127.0.0.1:8000/api/users/?role=REVIEWER,CHAIR,SECRETARY", {
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
           "Content-Type": "application/json",
@@ -43,7 +44,10 @@ export default function ReviewerManagement({ proposalId, currentReviewers, userR
       });
       if (res.ok) {
         const data = await res.json();
-        setAvailableReviewers(data);
+        // Хэрэв backend pagination (хуудаслалт) ашигладаг бол data.results дотор, үгүй бол data дотор ирнэ.
+        // Энэ хоёр тохиолдлыг хоёуланг нь тооцож шалгая:
+        const reviewersList = data.results ? data.results : data;
+        setAvailableReviewers(reviewersList);
       }
     } catch (err) {
       console.error("Error fetching reviewers:", err);

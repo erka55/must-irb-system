@@ -19,67 +19,32 @@ class ProposalViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
-        # Нэвтрээгүй хэрэглэгчид юу ч харуулахгүй
-        if not user or user.is_anonymous or not user.is_authenticated:
+        if not user or user.is_anonymous:
             return Proposal.objects.none()
 
-        base_queryset = Proposal.objects.prefetch_related(
-            "reviewers", "reviews", "documents"
-        ).order_by("-created_at")
+        user_role = getattr(user, 'role', '').upper()
 
-        # Төслийн дэлгэрэнгүй хуудсыг шууд ID-гаар харах үед (retrieve action)
-        if self.action == "retrieve":
-            return base_queryset
+        # 1. Судлаач зөвхөн өөрийн төслийг харна (Ноорог болон бусад)
+        if user_role == 'RESEARCHER':
+            return Proposal.objects.filter(researcher=user).order_by('-created_at')
 
-        user_role = str(getattr(user, "role", "")).upper()
+        # 2. Дарга, Нарийн бичиг, Шүүмжлэгч нар:
+        # Өөрийнхөө бүх төслийг (DRAFT байсан ч) БОЛОН бусдын илгээсэн (DRAFT биш) төслүүдийг харна
+        if user_role in ['CHAIR', 'SECRETARY', 'REVIEWER']:
+            return Proposal.objects.filter(
+                Q(researcher=user) | ~Q(status='DRAFT')
+            ).order_by('-created_at')
 
-        # 1. Дарга, Нарийн бичиг, Супер хэрэглэгч нар:
-        # Өөрийн үүсгэсэн БҮХ төслийг (DRAFT байсан ч) БОЛОН бусдын албан ёсоор илгээсэн (DRAFT-аас бусад) төслүүдийг харна.
-        if user.is_superuser or user_role in ["SECRETARY", "CHAIR", "SECRETARY_CHAIR"]:
-            return base_queryset.filter(
-                Q(researcher=user) | ~Q(status="DRAFT")
-            ).distinct()
+        # 3. Зөвхөн ADMIN эсвэл цэвэр Superuser бүх төслийг харна
+        if user.is_superuser or user_role == 'ADMIN':
+            return Proposal.objects.all().order_by('-created_at')
 
-        # 2. Шүүмжлэгч (REVIEWER): Өөрт нь томилогдсон ЭСВЭЛ өөрийнх нь үүсгэсэн төслүүдийг харна
-        if user_role == "REVIEWER":
-            return base_queryset.filter(
-                Q(reviewers=user) | Q(researcher=user)
-            ).distinct()
-
-        # 3. Судлаач (RESEARCHER): Өөрийн үүсгэсэн бүх төслийг (DRAFT-тайгаа) харна
-        if user_role == "RESEARCHER":
-            return base_queryset.filter(researcher=user)
-
-        # Бусад эрхгүй хэрэглэгчдэд хоосон буцаана
         return Proposal.objects.none()
 
     def perform_create(self, serializer):
         user = self.request.user
         app_no = f"IRB-2026-{uuid.uuid4().hex[:6].upper()}"
         serializer.save(researcher=user, application_no=app_no)
-
-    @action(detail=False, methods=["get"], url_path="reviewers")
-    def get_reviewers(self, request):
-        """
-        Томилж болох бүх шүүмжлэгчдийн жагсаалтыг буцаана.
-        REVIEWER-ээс гадна CHAIR, SECRETARY нарыг давхар оруулна. (Superuser-г хассан)
-        """
-        reviewers = User.objects.filter(
-            Q(role__in=["REVIEWER", "CHAIR", "SECRETARY", "SECRETARY_CHAIR"])
-        ).distinct()
-
-        data = [
-            {
-                "id": u.id,
-                "username": u.username,
-                "email": u.email,
-                "first_name": u.first_name,
-                "last_name": u.last_name,
-                "role": u.role,
-            }
-            for u in reviewers
-        ]
-        return Response(data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], url_path="assign-reviewer")
     def assign_reviewer(self, request, pk=None):
@@ -190,7 +155,7 @@ class ProposalViewSet(viewsets.ModelViewSet):
 
         # Төслийн төлөвийг шинэчлэх (Хэрэв ямар ч шүүмжлэгч үлдээгүй бол төлөвийг буцааж SUBMITTED болгож болно)
         if hasattr(proposal, "reviewers") and proposal.reviewers.count() == 0:
-            proposal.status = Proposal.Status.SUBMITTED
+            proposal.status = "SUBMITTED"
             proposal.save()
 
         return Response(

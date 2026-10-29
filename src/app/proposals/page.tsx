@@ -6,9 +6,11 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { RoleGuard } from '@/components/protected/RoleGuard';
 import { getProposals } from '@/services/proposalService';
 import { Proposal } from '@/types/proposal';
+import { useAuth } from '@/context/AuthContext';
 
 export default function ProposalsPage() {
   const router = useRouter();
+  const { user } = useAuth(); // Нэвтэрсэн хэрэглэгчийн мэдээллийг авах
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -68,28 +70,53 @@ export default function ProposalsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 text-sm">
-                  {proposals.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="p-4 font-medium text-gray-900">{item.title}</td>
-                      <td className="p-4 text-gray-600">{item.researcher_name || '-'}</td>
-                      <td className="p-4">
-                        <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                          {item.status_display || item.status}
-                        </span>
-                      </td>
-                      <td className="p-4 text-gray-500">
-                        {item.created_at ? new Date(item.created_at).toLocaleDateString() : '-'}
-                      </td>
-                      <td className="p-4 text-right">
-                        <button
-                          onClick={() => router.push(`/proposals/${item.id}`)}
-                          className="px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors"
-                        >
-                          Харах
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {proposals.map((item) => {
+                    // Хэрэглэгчийн ID болон төслийн судлаачийн ID таарч байгаа эсэхийг шалгах
+                    const isMine = String(user?.id) === String(item.researcher);
+
+                    return (
+                      <tr 
+                        key={item.id} 
+                        className={`transition-colors ${isMine ? 'bg-blue-50/40' : 'hover:bg-gray-50'}`}
+                      >
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
+                            <span 
+                              className={`font-medium ${
+                                isMine 
+                                  ? 'text-blue-800 underline decoration-blue-400 underline-offset-4' 
+                                  : 'text-gray-900'
+                              }`}
+                            >
+                              {item.title}
+                            </span>
+                            {isMine && (
+                              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-800 bg-blue-200 rounded-full whitespace-nowrap">
+                                Миний төсөл
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-4 text-gray-600">{item.researcher_name || '-'}</td>
+                        <td className="p-4">
+                          <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                            {item.status_display || item.status}
+                          </span>
+                        </td>
+                        <td className="p-4 text-gray-500">
+                          {item.created_at ? new Date(item.created_at).toLocaleDateString() : '-'}
+                        </td>
+                        <td className="p-4 text-right">
+                          <button
+                            onClick={() => router.push(`/proposals/${item.id}`)}
+                            className="px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors"
+                          >
+                            Харах
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

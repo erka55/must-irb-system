@@ -19,7 +19,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'id': self.user.id,
             'username': self.user.username,
             'email': self.user.email,
-            'role': self.user.role,
+            'role': getattr(self.user, 'role', ''),
             'first_name': self.user.first_name,
             'last_name': self.user.last_name,
         }
@@ -46,11 +46,14 @@ class UserListView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        queryset = User.objects.all()
-        # GET хүсэлтийн query parameter-ээс role-ийг авна (жишээ нь: /api/users/?role=REVIEWER)
+        queryset = User.objects.filter(is_active=True)
         role = self.request.query_params.get('role', None)
+        
         if role:
-            queryset = queryset.filter(role=role)
+            # Олон дүрийг таслалаар салгаж ирвэл жагсаалт болгон шүүнэ
+            role_list = [r.strip().upper() for r in role.split(',')]
+            queryset = queryset.filter(role__in=role_list)
+            
         return queryset
 
 

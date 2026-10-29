@@ -20,4 +20,3 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review for {self.proposal.application_no} by {self.reviewer.username}"
-    

@@ -102,4 +102,10 @@ export const updateProposal = async (id: string | number, data: { title?: string
   return res.data;
 };
 
+// 12. Шүүмжлэгчийн дүгнэлт оруулах
+export const submitReview = async (data: { proposal: number | string; comments: string; decision: string }) => {
+  const res = await api.post('/reviews/', data);
+  return res.data;
+};
+
 export default api;
