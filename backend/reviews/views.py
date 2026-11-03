@@ -16,7 +16,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
         user_role = str(getattr(user, "role", "")).upper()
 
-        if user.is_staff or user_role in ["SECRETARY", "CHAIR", "SECRETARY_CHAIR"]:
+        if user.is_staff or user_role in ["SECRETARY", "CHAIR"]:
             return Review.objects.all().order_by('-assigned_at')
 
         if user_role == "REVIEWER":

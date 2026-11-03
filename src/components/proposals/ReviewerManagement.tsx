@@ -24,7 +24,7 @@ export default function ReviewerManagement({ proposalId, currentReviewers, userR
 
   // Зөвхөн Дарга болон Нарийн бичигт томилох/хасах эрх нээнэ
   const userRoleUpper = userRole?.toUpperCase();
-  const canManage = userRoleUpper === "CHAIR" || userRoleUpper === "SECRETARY" || userRoleUpper === "SECRETARY_CHAIR";
+  const canManage = userRoleUpper === "CHAIR" || userRoleUpper === "SECRETARY";
 
   useEffect(() => {
     if (canManage) {

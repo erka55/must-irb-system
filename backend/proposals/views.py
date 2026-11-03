@@ -52,7 +52,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
         if getattr(request.user, "role", "") not in [
             "CHAIR",
             "SECRETARY",
-            "SECRETARY_CHAIR",
         ]:
             return Response(
                 {
@@ -122,7 +121,6 @@ class ProposalViewSet(viewsets.ModelViewSet):
         if getattr(request.user, "role", "") not in [
             "CHAIR",
             "SECRETARY",
-            "SECRETARY_CHAIR",
         ]:
             return Response(
                 {"error": "Зөвхөн Нарийн бичиг болон Дарга шүүмжлэгчийг хасах эрхтэй."},

@@ -23,6 +23,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { label: 'Хянах самбар', path: '/dashboard' },
     { label: 'Төслүүд', path: '/proposals' },
     { label: '+ Шинэ төсөл', path: '/proposals/new' },
+    { label: 'Хорооны хурлууд', path: '/dashboard/meetings' }, // ЭНЭ МӨРИЙГ ШИНЭЭР НЭМЛЭЭ
   ];
 
   return (
