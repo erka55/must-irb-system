@@ -16,7 +16,7 @@
 
 ### erka
 # @name loginErka
-POST {{baseUrl}}/api/users/token/
+POST {{baseUrl}}/api/token/
 Content-Type: application/json
 
 { "username": "erka", "password": "{{password}}" }
@@ -26,7 +26,7 @@ Content-Type: application/json
 
 ### suren
 # @name loginSuren
-POST {{baseUrl}}/api/users/token/
+POST {{baseUrl}}/api/token/
 Content-Type: application/json
 
 { "username": "suren", "password": "{{password}}" }
@@ -36,7 +36,7 @@ Content-Type: application/json
 
 ### dorj
 # @name loginDorj
-POST {{baseUrl}}/api/users/token/
+POST {{baseUrl}}/api/token/
 Content-Type: application/json
 
 { "username": "dorj", "password": "{{password}}" }
@@ -46,7 +46,7 @@ Content-Type: application/json
 
 ### bat
 # @name loginBat
-POST {{baseUrl}}/api/users/token/
+POST {{baseUrl}}/api/token/
 Content-Type: application/json
 
 { "username": "bat", "password": "{{password}}" }
@@ -56,7 +56,7 @@ Content-Type: application/json
 
 ### res1
 # @name loginRes1
-POST {{baseUrl}}/api/users/token/
+POST {{baseUrl}}/api/token/
 Content-Type: application/json
 
 { "username": "res1", "password": "{{password}}" }
@@ -66,7 +66,7 @@ Content-Type: application/json
 
 ### res2
 # @name loginRes2
-POST {{baseUrl}}/api/users/token/
+POST {{baseUrl}}/api/token/
 Content-Type: application/json
 
 { "username": "res2", "password": "{{password}}" }
@@ -75,7 +75,7 @@ Content-Type: application/json
 @res2Token = {{loginRes2.response.body.access}}
 
 ### Token шинэчлэх (res1-ийн жишээ)
-POST {{baseUrl}}/api/users/token/refresh/
+POST {{baseUrl}}/api/token/refresh/
 Content-Type: application/json
 
 { "refresh": "{{loginRes1.response.body.refresh}}" }
@@ -106,7 +106,8 @@ Content-Type: application/json
 
 {
   "title": "Туршилтын судалгаа",
-  "description": "REST Client-ээр үүсгэв"
+  "summary": "Энэ бол REST Client-ээр үүсгэсэн хураангуй.",
+  "methodology": "Асуумж судалгаа"
 }
 
 ###
@@ -144,7 +145,7 @@ Content-Type: application/pdf
 GET {{baseUrl}}/api/documents/
 Authorization: Bearer {{researcherToken}}
 
-### Хорооны өмнө илгээх
+### Хорооны өмнө илгээх (Хэрэв submit action байгаа бол)
 POST {{baseUrl}}/api/proposals/{{proposalId}}/submit/
 Authorization: Bearer {{researcherToken}}
 
@@ -153,19 +154,12 @@ Authorization: Bearer {{researcherToken}}
 # 4. АДМИН: ШҮҮГЧ ОНООХ
 #################################################
 
-### Шүүгч оноох
+### Шүүгч оноох (Зөвхөн админ эсвэл нарийн бичиг)
 POST {{baseUrl}}/api/proposals/{{proposalId}}/assign-reviewer/
 Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
-{ "reviewer": 3 }
-
-### Шүүгч хасах
-POST {{baseUrl}}/api/proposals/{{proposalId}}/remove-reviewer/
-Authorization: Bearer {{adminToken}}
-Content-Type: application/json
-
-{ "reviewer": 3 }
+{ "reviewer_id": 3 }
 
 
 #################################################
@@ -236,10 +230,6 @@ Content-Type: application/json
   "meeting_minutes": "Хурлаар батлав"
 }
 
-### Шийдвэрийн түүх (зөвхөн унших)
-GET {{baseUrl}}/api/decision-logs/
-Authorization: Bearer {{adminToken}}
-
 
 #################################################
 # 7. МЭДЭГДЭЛ
@@ -247,8 +237,12 @@ Authorization: Bearer {{adminToken}}
 
 ### Судлаачийн мэдэгдлүүд
 GET {{baseUrl}}/api/notifications/
+Authorization: Bearer {{reviewerToken}}
+
+### Уншаагүй мэдэгдлийн тоо
+GET {{baseUrl}}/api/notifications/unread_count/
 Authorization: Bearer {{researcherToken}}
 
 ### Бүгдийг уншсан болгох
 POST {{baseUrl}}/api/notifications/mark_all_as_read/
-Authorization: Bearer {{researcherToken}}
+Authorization: Bearer {{reviewerToken}}
