@@ -237,19 +237,14 @@ export function ProposalDetailView({ id }: { id: string }) {
                     currentReviewers={proposal.reviewers || []}
                     userRole={user?.role}
                     onUpdate={fetchProposal}
+                    reviewProgress={proposal.review_progress}
                   />
                 )}
 
                 {/* ШҮҮМЖЛЭГЧИЙН ДҮГНЭЛТ ОРУУЛАХ ХЭСЭГ */}
                 {(() => {
-                  // 1. Хэрэглэгчийн эрх нь Дарга, Нарийн бичиг эсвэл Шүүмжлэгч эсэхийг шалгах
                   const isAuthorizedRole = ["REVIEWER", "CHAIR", "SECRETARY"].includes(user?.role);
-
-                  // 2. Ямар ч дүр байсан ЗААВАЛ тухайн төсөлд шүүмжлэгчээр хуваарилагдсан байх ёстой.
-                  // (ID-уудыг String руу хөрвүүлж харьцуулах нь төрлийн алдаанаас сэргийлнэ)
                   const isAssignedReviewer = proposal.reviewers?.some((reviewer: any) => String(reviewer.id) === String(user?.id));
-
-                  // 3. Төслийн төлөв нь "UNDER_REVIEW" (Шүүмжид байгаа) эсэхийг шалгах
                   const isUnderReview = proposal.status === "UNDER_REVIEW";
 
                   return isAuthorizedRole && isAssignedReviewer && isUnderReview ? (

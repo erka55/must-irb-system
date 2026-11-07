@@ -5,9 +5,10 @@ import React, { useState, useEffect } from "react";
 interface Reviewer {
   id: number | string;
   username: string;
-  first_name: string;
-  last_name: string;
-  email: string;
+  first_name?: string; // ? нэмсэн
+  last_name?: string; // ? нэмсэн
+  email?: string; // ? нэмсэн
+  has_submitted?: boolean;
 }
 
 interface ReviewerManagementProps {
@@ -15,9 +16,13 @@ interface ReviewerManagementProps {
   currentReviewers: Reviewer[];
   userRole?: string;
   onUpdate: () => void;
+  // Шүүмжийн явцын мэдээлэл (ProposalSerializer-ээс ирсэн review_progress)
+  reviewProgress?: {
+    details: { reviewer_name: string; has_submitted: boolean }[];
+  };
 }
 
-export default function ReviewerManagement({ proposalId, currentReviewers, userRole, onUpdate }: ReviewerManagementProps) {
+export default function ReviewerManagement({ proposalId, currentReviewers, userRole, onUpdate, reviewProgress }: ReviewerManagementProps) {
   const [availableReviewers, setAvailableReviewers] = useState<Reviewer[]>([]);
   const [selectedReviewerId, setSelectedReviewerId] = useState<string>("");
   const [actionLoading, setActionLoading] = useState(false);
@@ -30,12 +35,11 @@ export default function ReviewerManagement({ proposalId, currentReviewers, userR
     if (canManage) {
       fetchAvailableReviewers();
     }
-  }, [canManage]);
+  }, [canManage, currentReviewers]); // currentReviewers өөрчлөгдөх бүрт жагсаалтыг шинэчилнэ
 
   const fetchAvailableReviewers = async () => {
     try {
       const token = sessionStorage.getItem("access_token");
-      // Хаягийг /api/users/?role=REVIEWER болгож өөрчлөв
       const res = await fetch("http://127.0.0.1:8000/api/users/?role=REVIEWER,CHAIR,SECRETARY", {
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
@@ -44,10 +48,13 @@ export default function ReviewerManagement({ proposalId, currentReviewers, userR
       });
       if (res.ok) {
         const data = await res.json();
-        // Хэрэв backend pagination (хуудаслалт) ашигладаг бол data.results дотор, үгүй бол data дотор ирнэ.
-        // Энэ хоёр тохиолдлыг хоёуланг нь тооцож шалгая:
-        const reviewersList = data.results ? data.results : data;
-        setAvailableReviewers(reviewersList);
+        const reviewersList: Reviewer[] = data.results ? data.results : data;
+
+        // 1. ЖАГСААЛТААС ШҮҮХ: Аль хэдийн томилогдсон хүмүүсийг унагах
+        const currentIds = currentReviewers.map((r) => String(r.id));
+        const filteredReviewers = reviewersList.filter((r) => !currentIds.includes(String(r.id)));
+
+        setAvailableReviewers(filteredReviewers);
       }
     } catch (err) {
       console.error("Error fetching reviewers:", err);
@@ -116,31 +123,57 @@ export default function ReviewerManagement({ proposalId, currentReviewers, userR
     }
   };
 
+  // Шүүмжлэгч бүрийн шүүмж өгсөн төлөвийг шалгах туслах функц
+  const checkHasSubmitted = (reviewer: Reviewer) => {
+    if (!reviewProgress || !reviewProgress.details) return false;
+
+    // Нэрээр нь тулгах (backend-ээс ирж буй нэр нь эсвэл username нь таарч байгаа эсэх)
+    const fullName = `${reviewer.first_name} ${reviewer.last_name}`.trim();
+    const matchName = fullName || reviewer.username;
+
+    const detail = reviewProgress.details.find((d) => d.reviewer_name === matchName);
+    return detail ? detail.has_submitted : false;
+  };
+
   return (
     <div className="border-t pt-4 mt-6">
       <h3 className="text-sm font-semibold text-gray-700 mb-2">Хуваарилагдсан шүүмжлэгчид</h3>
 
       {currentReviewers && currentReviewers.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {currentReviewers.map((reviewer) => (
-            <div key={reviewer.id} className="p-3 bg-gray-50 rounded border border-gray-200 text-sm flex justify-between items-center">
-              <div>
-                <p className="font-medium text-gray-800">
-                  {reviewer.first_name ? `${reviewer.first_name} ${reviewer.last_name}` : reviewer.username} (@{reviewer.username})
-                </p>
-                <p className="text-gray-500 text-xs">{reviewer.email}</p>
+          {currentReviewers.map((reviewer) => {
+            const hasSubmitted = checkHasSubmitted(reviewer);
+
+            return (
+              <div key={reviewer.id} className="p-3 bg-gray-50 rounded border border-gray-200 text-sm flex justify-between items-center">
+                <div>
+                  <p className="font-medium text-gray-800 flex items-center gap-2">
+                    {reviewer.first_name ? `${reviewer.first_name} ${reviewer.last_name}` : reviewer.username}
+                    <span className="text-[10px] font-normal text-gray-500">(@{reviewer.username})</span>
+
+                    {/* Төлөвийн жижиг Badge */}
+                    {hasSubmitted ? (
+                      <span className="px-1.5 py-0.5 text-[10px] bg-green-100 text-green-700 rounded-sm">Өгсөн</span>
+                    ) : (
+                      <span className="px-1.5 py-0.5 text-[10px] bg-amber-100 text-amber-700 rounded-sm">Хүлээгдэж буй</span>
+                    )}
+                  </p>
+                  <p className="text-gray-500 text-xs">{reviewer.email}</p>
+                </div>
+
+                {/* 2. УСТГАХ ТОВЧ НУУХ ЛОГИК: Зөвхөн шүүмж өгөөгүй бөгөөд Дарга/Нарийн бичиг үед л "Хасах" товч харагдана */}
+                {canManage && !hasSubmitted && (
+                  <button
+                    onClick={() => handleRemove(reviewer.id)}
+                    disabled={actionLoading}
+                    className="px-2.5 py-1 text-xs font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded border border-red-200 transition-colors disabled:opacity-50"
+                  >
+                    Хасах
+                  </button>
+                )}
               </div>
-              {canManage && (
-                <button
-                  onClick={() => handleRemove(reviewer.id)}
-                  disabled={actionLoading}
-                  className="px-2.5 py-1 text-xs font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded border border-red-200 transition-colors disabled:opacity-50"
-                >
-                  Хасах
-                </button>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <p className="text-sm text-gray-500 italic p-3 bg-gray-50 rounded border">Одоогоор шүүмжлэгч томилогдоогүй байна.</p>
@@ -170,6 +203,9 @@ export default function ReviewerManagement({ proposalId, currentReviewers, userR
               {actionLoading ? "Уншиж байна..." : "Томилох"}
             </button>
           </div>
+          {availableReviewers.length === 0 && currentReviewers.length > 0 && (
+            <p className="text-xs text-gray-500 mt-2">Бусад бүх шүүмжлэгчид энэ төсөлд аль хэдийн хуваарилагдсан байна.</p>
+          )}
         </div>
       )}
     </div>

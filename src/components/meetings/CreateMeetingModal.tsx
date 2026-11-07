@@ -20,13 +20,15 @@ export default function CreateMeetingModal({ isOpen, onClose, onSuccess }: Creat
   const [error, setError] = useState<string | null>(null);
 
   // Модал нээгдэх үед төслүүдийг татах
+  // Модал нээгдэх үед төслүүдийг татах
   useEffect(() => {
     if (isOpen) {
       const fetchProposals = async () => {
         try {
           const res = await api.get("/proposals/");
-          // Зөвхөн хэлэлцэх шаардлагатай төслүүдийг шүүх (Ноороглосон болон хэдийнэ батлагдсан төслүүдийг хасах)
-          const pendingProposals = res.data.filter((p: any) => ["SUBMITTED", "UNDER_REVIEW", "REVISION_REQUIRED"].includes(p.status));
+          // ЗӨВХӨН бүх шүүмжлэгч шүүмжээ өгч дууссан (is_ready: true) төслүүдийг л хуралд товлох боломжтой
+          const pendingProposals = res.data.filter((p: any) => p.status === "UNDER_REVIEW" && p.review_progress?.is_ready === true);
+
           setAvailableProposals(pendingProposals);
         } catch (err) {
           console.error("Төслүүд татахад алдаа гарлаа:", err);
@@ -133,7 +135,9 @@ export default function CreateMeetingModal({ isOpen, onClose, onSuccess }: Creat
             <label className="block text-sm font-medium text-gray-700 mb-2">Хэлэлцэх төслүүд (Сонгох)</label>
             <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2 space-y-2 bg-gray-50">
               {availableProposals.length === 0 ? (
-                <p className="text-xs text-gray-500 text-center py-4">Хэлэлцэх боломжтой (SUBMITTED, UNDER_REVIEW) төсөл алга байна.</p>
+                <p className="text-xs text-gray-500 text-center py-4">
+                  Шүүмжлэл нь бүрэн дууссан, хуралд хэлэлцэхэд бэлэн болсон төсөл алга байна.
+                </p>
               ) : (
                 availableProposals.map((proposal) => (
                   <label

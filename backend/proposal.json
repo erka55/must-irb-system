@@ -1,0 +1,226 @@
+[
+{
+  "model": "proposals.proposal",
+  "pk": 1,
+  "fields": {
+    "application_no": "IRB-2026-3E88F5",
+    "title": "Кибер аюулгүй байдлын судалгаа",
+    "summary": "Энэхүү судалгаагаар эмнэлгийн системүүдийн нууцлалыг судална.",
+    "methodology": "Асуулгын болон туршилтын арга",
+    "researcher": 2,
+    "review_level": "FULL_BOARD",
+    "status": "SUBMITTED",
+    "created_at": "2026-10-14T04:31:06Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 2,
+  "fields": {
+    "application_no": "IRB-2026-5F9A1B",
+    "title": "Эрүүл мэндийн өгөгдлийн шинжилгээ",
+    "summary": "Өвчтөний мэдээллийн аюулгүй байдлыг хангах аргуудыг харьцуулах",
+    "methodology": "Тоон болон чанарын судалгаа",
+    "researcher": 2,
+    "review_level": "EXPEDITED",
+    "status": "DRAFT",
+    "created_at": "2026-10-15T01:15:00Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 3,
+  "fields": {
+    "application_no": "IRB-2026-001",
+    "title": "Эрүүл мэндийн мэдээллийн аюулгүй байдлын судалгаа",
+    "summary": "Энэхүү судалгаагаар эмнэлгийн системүүдийн нууцлалыг судална.",
+    "methodology": "Асуулгын болон туршилтын арга",
+    "researcher": 3,
+    "review_level": "FULL_BOARD",
+    "status": "SUBMITTED",
+    "created_at": "2026-10-14T05:36:28Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 4,
+  "fields": {
+    "application_no": "IRB-2026-9B4D2C",
+    "title": "Хиймэл оюун ухаан болон эмнэлгийн оношилгоо",
+    "summary": "AI алгоритмуудын оношилгооны нарийвчлалыг үнэлэх",
+    "methodology": "Туршилтын судалгаа",
+    "researcher": 3,
+    "review_level": "FULL_BOARD",
+    "status": "DRAFT",
+    "created_at": "2026-10-16T03:20:00Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 5,
+  "fields": {
+    "application_no": "IRB-2026-F3B1AF",
+    "title": "Доржийн судалгаа 1",
+    "summary": "Монголын хөдөө орон нутгийн эрүүл мэндийн үйлчилгээний хүртээмж",
+    "methodology": "Асуулга, ярилцлага",
+    "researcher": 6,
+    "review_level": "EXEMPTED",
+    "status": "SUBMITTED",
+    "created_at": "2026-10-19T05:01:43Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 6,
+  "fields": {
+    "application_no": "IRB-2026-7A1C8E",
+    "title": "Ахмад настны асаргаа сувилгааны загвар",
+    "summary": "Ахмад настны гэрийн асаргааны хэрэгцээнд тулгуурласан загвар боловсруулах",
+    "methodology": "Ажиглалт, баримт бичгийн шинжилгээ",
+    "researcher": 6,
+    "review_level": "EXPEDITED",
+    "status": "DRAFT",
+    "created_at": "2026-10-20T06:45:00Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 7,
+  "fields": {
+    "application_no": "IRB-2026-7C74D2",
+    "title": "Эркагийн шинэ төсөл",
+    "summary": "Их сургуулийн оюутнуудын сэтгэцийн эрүүл мэнд",
+    "methodology": "Сэтгэл зүйн сорил, статистик шинжилгээ",
+    "researcher": 7,
+    "review_level": "EXEMPTED",
+    "status": "SUBMITTED",
+    "created_at": "2026-10-21T07:18:32Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 8,
+  "fields": {
+    "application_no": "IRB-2026-D4E6F8",
+    "title": "Цахим сургалтын үр ашгийн судалгаа",
+    "summary": "Ковид-19-ийн дараах цахим сургалтын нөлөөллийг судлах",
+    "methodology": "Харьцуулсан шинжилгээ",
+    "researcher": 7,
+    "review_level": "EXEMPTED",
+    "status": "DRAFT",
+    "created_at": "2026-10-22T02:05:00Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 9,
+  "fields": {
+    "application_no": "IRB-2026-1BE7BD",
+    "title": "МХТ-ийн бодлогын хэрэгжилтийн судалгаа",
+    "summary": "Мэдээлэл холбооны салбарын инновацийн бодлого",
+    "methodology": "Баримт бичгийн шинжилгээ",
+    "researcher": 1,
+    "review_level": "EXEMPTED",
+    "status": "SUBMITTED",
+    "created_at": "2026-10-26T03:06:37Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 10,
+  "fields": {
+    "application_no": "IRB-2026-C5A3B1",
+    "title": "Ухаалаг хотын төлөвлөлт",
+    "summary": "Улаанбаатар хотын замын хөдөлгөөний удирдлагын системийг сайжруулах",
+    "methodology": "Загварчлал, оновчлол",
+    "researcher": 1,
+    "review_level": "EXPEDITED",
+    "status": "DRAFT",
+    "created_at": "2026-10-26T08:30:00Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 11,
+  "fields": {
+    "application_no": "IRB-2026-FDCA39",
+    "title": "Оюутны үйлчилгээний судалгаа",
+    "summary": "Оюутны дотуур байрны нөхцөл байдлын судалгаа",
+    "methodology": "Асуулга, ярилцлага",
+    "researcher": 4,
+    "review_level": "EXEMPTED",
+    "status": "SUBMITTED",
+    "created_at": "2026-10-26T03:23:04Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 12,
+  "fields": {
+    "application_no": "IRB-2026-8E3A7D",
+    "title": "Сургалтын орчны эргономик",
+    "summary": "Ширээ, сандлын хэмжээний сургалтын үр дүнд үзүүлэх нөлөө",
+    "methodology": "Хэмжилт, туршилт",
+    "researcher": 4,
+    "review_level": "EXPEDITED",
+    "status": "DRAFT",
+    "created_at": "2026-10-27T01:15:00Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 13,
+  "fields": {
+    "application_no": "IRB-2026-DED73D",
+    "title": "Суралцах орчны судалгаа",
+    "summary": "Их сургуулийн кампусын ногоон байгууламж",
+    "methodology": "Байгаль орчны үнэлгээ",
+    "researcher": 5,
+    "review_level": "EXEMPTED",
+    "status": "SUBMITTED",
+    "created_at": "2026-10-26T05:09:14Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 14,
+  "fields": {
+    "application_no": "IRB-2026-F1C5E9",
+    "title": "Хог хаягдлын менежментийн судалгаа",
+    "summary": "Сургуулийн орчны хог хаягдлыг бууруулах арга зам",
+    "methodology": "Ажиглалт, санал асуулга",
+    "researcher": 5,
+    "review_level": "EXEMPTED",
+    "status": "DRAFT",
+    "created_at": "2026-10-27T06:20:00Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+}
+]

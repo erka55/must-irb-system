@@ -1,0 +1,149 @@
+[
+{
+  "model": "users.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$Efq6PCx1QQmFybDMw62SQz$UioalVHIy6dh1WF+PtU7XEChTT2Vqxdy2kTI56u4jFw=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "erka",
+    "first_name": "Эрдэнэбаатар",
+    "last_name": "Алтангэрэл",
+    "email": "a_erka@yahoo.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-10-14T00:39:46Z",
+    "role": "CHAIR",
+    "phone_number": "86339943",
+    "department": "ШУТИС",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$B8pt977U1SvxOzAtP5W8BG$g1wvvBbLtb5NV2BmW4h3MbhjctSZN6rJT9IK0RIm63E=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "res1",
+    "first_name": "Баатар",
+    "last_name": "Болд",
+    "email": "res1@must.edu.mn",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-10-14T03:27:46Z",
+    "role": "RESEARCHER",
+    "phone_number": "86008604",
+    "department": "МУИС",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 3,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$wExbyOWDRlMNqFWx7UxMph$CqYTpBY0yN2BdSPsaVx9Rdz+UUkmWDsSqPXAhh586Zk=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "res2",
+    "first_name": "Сүхбаатар",
+    "last_name": "Баттулга",
+    "email": "res2@num.edu.mn",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-10-14T03:34:26Z",
+    "role": "RESEARCHER",
+    "phone_number": "86008605",
+    "department": "МУИС",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 4,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$G7oZI4IaUye5JOK0h2RzxR$eh9JTETDt1njt0R8S11vTZi5VQdwHkkTfS76k1OSnMc=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "bat",
+    "first_name": "Бат",
+    "last_name": "Нацаг",
+    "email": "bat@num.edu.mn",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-10-15T14:22:26Z",
+    "role": "REVIEWER",
+    "phone_number": "86008601",
+    "department": "МУИС",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 5,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$oKnEBScDqjoTcpF5i1Vaz1$FbnikUwkRC7S0lqQT5hhSS3EAiWybNQsKk/pHU1Ex7Y=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "suren",
+    "first_name": "Сүрэн",
+    "last_name": "Бадам",
+    "email": "suren@must.edu.mn",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-10-16T07:28:44Z",
+    "role": "SECRETARY",
+    "phone_number": "86008602",
+    "department": "ШУТИС",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 6,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$A6eahqBzB9shkOqxs8Arjk$ICfruJeh54w5/u/BXmZA+j9V2e5pvCPBznpEPCJ8pfM=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "test_researcher",
+    "first_name": "Судлаач",
+    "last_name": "Тест",
+    "email": "researcher@test.mn",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-10-17T09:22:34Z",
+    "role": "RESEARCHER",
+    "phone_number": "86008606",
+    "department": "АШУҮИС",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 7,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$e8Wt0JeCStFaEgaRSvLRfT$6d05LuNXjqBjfIv/xuZbhiS/7YtLrTYlltMSmiDpE5k=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "dorj",
+    "first_name": "Доржсүрэн",
+    "last_name": "Банзрагч",
+    "email": "dorj@msue.edu.mn",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-10-17T13:50:59Z",
+    "role": "REVIEWER",
+    "phone_number": "86008603",
+    "department": "МУБИС",
+    "groups": [],
+    "user_permissions": []
+  }
+}
+]

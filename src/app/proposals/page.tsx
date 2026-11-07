@@ -1,28 +1,30 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { RoleGuard } from '@/components/protected/RoleGuard';
-import { getProposals } from '@/services/proposalService';
-import { Proposal } from '@/types/proposal';
-import { useAuth } from '@/context/AuthContext';
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { RoleGuard } from "@/components/protected/RoleGuard";
+import { getProposals } from "@/services/proposalService";
+import { Proposal } from "@/types/proposal";
+import { useAuth } from "@/context/AuthContext";
+import ProposalStatusBadge from "@/components/proposals/ProposalStatusBadge";
 
 export default function ProposalsPage() {
   const router = useRouter();
   const { user } = useAuth(); // Нэвтэрсэн хэрэглэгчийн мэдээллийг авах
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchProposals = async () => {
       try {
         const data = await getProposals();
+        console.log("Жагсаалтын өгөгдөл:", data); // ҮҮНИЙГ НЭМНЭ ҮҮ
         setProposals(data);
       } catch (err: any) {
-        console.error('Error fetching proposals:', err);
-        setError('Төслүүдийн мэдээллийг татахад алдаа гарлаа.');
+        console.error("Error fetching proposals:", err);
+        setError("Төслүүдийн мэдээллийг татахад алдаа гарлаа.");
       } finally {
         setLoading(false);
       }
@@ -32,31 +34,25 @@ export default function ProposalsPage() {
   }, []);
 
   return (
-    <RoleGuard allowedRoles={['RESEARCHER', 'REVIEWER', 'CHAIR', 'SECRETARY', 'ADMIN']}>
+    <RoleGuard allowedRoles={["RESEARCHER", "REVIEWER", "CHAIR", "SECRETARY", "ADMIN"]}>
       <DashboardLayout>
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-800">Судалгааны төслүүд</h1>
             <button
-              onClick={() => router.push('/proposals/new')}
+              onClick={() => router.push("/proposals/new")}
               className="px-4 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition-colors text-sm"
             >
               + Шинэ төсөл бүртгэх
             </button>
           </div>
 
-          {error && (
-            <div className="p-3 mb-4 text-red-700 bg-red-100 rounded border border-red-200 text-sm">
-              {error}
-            </div>
-          )}
+          {error && <div className="p-3 mb-4 text-red-700 bg-red-100 rounded border border-red-200 text-sm">{error}</div>}
 
           {loading ? (
             <p className="text-gray-500 text-center py-8">Ачаалж байна...</p>
           ) : proposals.length === 0 ? (
-            <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-              Одоогоор бүртгэгдсэн төсөл байхгүй байна.
-            </div>
+            <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">Одоогоор бүртгэгдсэн төсөл байхгүй байна.</div>
           ) : (
             <div className="bg-white rounded-lg shadow overflow-hidden">
               <table className="w-full text-left border-collapse">
@@ -75,17 +71,12 @@ export default function ProposalsPage() {
                     const isMine = String(user?.id) === String(item.researcher);
 
                     return (
-                      <tr 
-                        key={item.id} 
-                        className={`transition-colors ${isMine ? 'bg-blue-50/40' : 'hover:bg-gray-50'}`}
-                      >
+                      <tr key={item.id} className={`transition-colors ${isMine ? "bg-blue-50/40" : "hover:bg-gray-50"}`}>
                         <td className="p-4">
                           <div className="flex items-center gap-2">
-                            <span 
+                            <span
                               className={`font-medium ${
-                                isMine 
-                                  ? 'text-blue-800 underline decoration-blue-400 underline-offset-4' 
-                                  : 'text-gray-900'
+                                isMine ? "text-blue-800 underline decoration-blue-400 underline-offset-4" : "text-gray-900"
                               }`}
                             >
                               {item.title}
@@ -97,15 +88,38 @@ export default function ProposalsPage() {
                             )}
                           </div>
                         </td>
-                        <td className="p-4 text-gray-600">{item.researcher_name || '-'}</td>
+                        <td className="p-4 text-gray-600">{item.researcher_name || "-"}</td>
+
+                        {/* ТӨЛӨВ ХАРУУЛАХ БАГАНА: Баж болон Шүүмжлэгчдийн мэдээллийг хамт харуулна */}
                         <td className="p-4">
-                          <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                            {item.status_display || item.status}
-                          </span>
+                          <div className="flex flex-col items-start gap-2">
+                            <ProposalStatusBadge
+                              status={item.status}
+                              statusDisplay={item.status_display}
+                              reviewProgress={item.review_progress}
+                            />
+
+                            {/* Шүүмжлэгчдийн дэлгэрэнгүй төлөвийг жагсаах */}
+                            {item.status === "UNDER_REVIEW" && item.review_progress?.details && (
+                              <div className="flex flex-col gap-1 mt-1">
+                                {item.review_progress.details.map((detail: any, index: number) => (
+                                  <span
+                                    key={index}
+                                    className={`text-[10px] px-2 py-0.5 rounded-full border w-max ${
+                                      detail.has_submitted
+                                        ? "bg-green-50 text-green-700 border-green-200"
+                                        : "bg-amber-50 text-amber-700 border-amber-200"
+                                    }`}
+                                  >
+                                    {detail.reviewer_name}: {detail.has_submitted ? "Өгсөн" : "Хүлээгдэж буй"}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </td>
-                        <td className="p-4 text-gray-500">
-                          {item.created_at ? new Date(item.created_at).toLocaleDateString() : '-'}
-                        </td>
+
+                        <td className="p-4 text-gray-500">{item.created_at ? new Date(item.created_at).toLocaleDateString() : "-"}</td>
                         <td className="p-4 text-right">
                           <button
                             onClick={() => router.push(`/proposals/${item.id}`)}

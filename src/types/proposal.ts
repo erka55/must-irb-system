@@ -29,6 +29,15 @@ export interface Proposal {
   documents?: Document[];
   reviews?: any[];
   final_decisions?: any[];
+  review_progress?: {
+    total_reviewers: number;
+    completed_count: number;
+    is_ready: boolean;
+    details: {
+      reviewer_name: string;
+      has_submitted: boolean;
+    }[];
+  };
 }
 
 // Нэмэгдсэн интерфейс:

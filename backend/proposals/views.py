@@ -1,6 +1,6 @@
 import uuid
 from django.contrib.auth import get_user_model
-from django.db.models import Q
+from django.db.models import Count, Q, F  # <--- Энэ импортыг нэмсэн
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -22,25 +22,42 @@ class ProposalViewSet(viewsets.ModelViewSet):
         if not user or user.is_anonymous:
             return Proposal.objects.none()
 
-        user_role = getattr(user, 'role', '').upper()
+        user_role = getattr(user, "role", "").upper()
 
-        # 1. Судлаач зөвхөн өөрийн төслийг харна (Ноорог болон бусад)
-        if user_role == 'RESEARCHER':
-            return Proposal.objects.filter(researcher=user).order_by('-created_at')
+        # 1. Үндсэн QuerySet-ийг хэрэглэгчийн дүрээр тодорхойлох
+        if user_role == "RESEARCHER":
+            base_queryset = Proposal.objects.filter(researcher=user).order_by(
+                "-created_at"
+            )
+        elif user_role in ["CHAIR", "SECRETARY", "REVIEWER"]:
+            base_queryset = Proposal.objects.filter(
+                Q(researcher=user) | ~Q(status="DRAFT")
+            ).order_by("-created_at")
+        elif user.is_superuser or user_role == "ADMIN":
+            base_queryset = Proposal.objects.all().order_by("-created_at")
+        else:
+            return Proposal.objects.none()
 
-        # 2. Дарга, Нарийн бичиг, Шүүмжлэгч нар:
-        # Өөрийнхөө бүх төслийг (DRAFT байсан ч) БОЛОН бусдын илгээсэн (DRAFT биш) төслүүдийг харна
-        if user_role in ['CHAIR', 'SECRETARY', 'REVIEWER']:
-            return Proposal.objects.filter(
-                Q(researcher=user) | ~Q(status='DRAFT')
-            ).order_by('-created_at')
+        # 2. Хурал товлох модалын шүүлтүүр (ready_for_meeting)
+        ready_for_meeting = self.request.query_params.get("ready_for_meeting", None)
+        if ready_for_meeting == "true":
+            # Зөвхөн UNDER_REVIEW төлөвтэй бөгөөд бүх шүүмжлэгч дүгнэлтээ өгсөн төслүүд
+            base_queryset = (
+                base_queryset.filter(status="UNDER_REVIEW")
+                .annotate(
+                    total_assignments=Count("reviewers", distinct=True),
+                    completed_reviews=Count(
+                        "reviews", filter=Q(reviews__is_completed=True), distinct=True
+                    ),
+                )
+                .filter(
+                    total_assignments__gt=0, total_assignments=F("completed_reviews")
+                )
+            )
 
-        # 3. Зөвхөн ADMIN эсвэл цэвэр Superuser бүх төслийг харна
-        if user.is_superuser or user_role == 'ADMIN':
-            return Proposal.objects.all().order_by('-created_at')
+        return base_queryset
 
-        return Proposal.objects.none()
-
+    # ... бусад perform_create, assign_reviewer, remove_reviewer, submit_proposal функцууд хэвээрээ үлдэнэ ...
     def perform_create(self, serializer):
         user = self.request.user
         app_no = f"IRB-2026-{uuid.uuid4().hex[:6].upper()}"

@@ -29,18 +29,15 @@ export default function EditMeetingModal({ isOpen, meeting, onClose, onSuccess }
       setMeetingDate(formattedDate);
       setLocation(meeting.location || "");
       setStatus(meeting.status || "SCHEDULED");
-      setSelectedProposals(meeting.proposals || []);
-      setError(null);
-
       // Төслүүдийг татах
       const fetchProposals = async () => {
         try {
           const res = await api.get("/proposals/");
-          // Энэ хуралд орсон болон хүлээгдэж буй төслүүдийг харуулах
+          // Энэ хуралд аль хэдийн орсон төслүүд эсвэл шинээр нэмэхэд бэлэн болсон (is_ready: true) төслүүдийг харуулах
           const selectableProposals = res.data.filter(
             (p: any) =>
-              ["SUBMITTED", "UNDER_REVIEW", "REVISION_REQUIRED"].includes(p.status) ||
-              (meeting.proposals && meeting.proposals.includes(p.id)),
+              (p.status === "UNDER_REVIEW" && p.review_progress?.is_ready === true) ||
+              (meeting.proposals && meeting.proposals.includes(p.id))
           );
           setAvailableProposals(selectableProposals);
         } catch (err) {

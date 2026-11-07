@@ -96,7 +96,7 @@ export const deleteProposal = async (id: string | number): Promise<void> => {
   await api.delete(`/proposals/${id}/`);
 };
 
-// 11. Төслийн мэдээлэл шинэчлэх (Засах)
+// 11. Төслийн мэдээлэл шинэчлэх (inline edit)
 export const updateProposal = async (id: string | number, data: { title?: string, summary?: string }): Promise<Proposal> => {
   const res = await api.patch(`/proposals/${id}/`, data);
   return res.data;

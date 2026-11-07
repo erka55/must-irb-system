@@ -1,0 +1,901 @@
+[
+{
+  "model": "auth.permission",
+  "pk": 1,
+  "fields": {
+    "name": "Can add log entry",
+    "content_type": 1,
+    "codename": "add_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 2,
+  "fields": {
+    "name": "Can change log entry",
+    "content_type": 1,
+    "codename": "change_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 3,
+  "fields": {
+    "name": "Can delete log entry",
+    "content_type": 1,
+    "codename": "delete_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 4,
+  "fields": {
+    "name": "Can view log entry",
+    "content_type": 1,
+    "codename": "view_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 5,
+  "fields": {
+    "name": "Can add permission",
+    "content_type": 3,
+    "codename": "add_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 6,
+  "fields": {
+    "name": "Can change permission",
+    "content_type": 3,
+    "codename": "change_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 7,
+  "fields": {
+    "name": "Can delete permission",
+    "content_type": 3,
+    "codename": "delete_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 8,
+  "fields": {
+    "name": "Can view permission",
+    "content_type": 3,
+    "codename": "view_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 9,
+  "fields": {
+    "name": "Can add group",
+    "content_type": 2,
+    "codename": "add_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 10,
+  "fields": {
+    "name": "Can change group",
+    "content_type": 2,
+    "codename": "change_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 11,
+  "fields": {
+    "name": "Can delete group",
+    "content_type": 2,
+    "codename": "delete_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 12,
+  "fields": {
+    "name": "Can view group",
+    "content_type": 2,
+    "codename": "view_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 13,
+  "fields": {
+    "name": "Can add content type",
+    "content_type": 4,
+    "codename": "add_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 14,
+  "fields": {
+    "name": "Can change content type",
+    "content_type": 4,
+    "codename": "change_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 15,
+  "fields": {
+    "name": "Can delete content type",
+    "content_type": 4,
+    "codename": "delete_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 16,
+  "fields": {
+    "name": "Can view content type",
+    "content_type": 4,
+    "codename": "view_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 17,
+  "fields": {
+    "name": "Can add session",
+    "content_type": 5,
+    "codename": "add_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 18,
+  "fields": {
+    "name": "Can change session",
+    "content_type": 5,
+    "codename": "change_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 19,
+  "fields": {
+    "name": "Can delete session",
+    "content_type": 5,
+    "codename": "delete_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 20,
+  "fields": {
+    "name": "Can view session",
+    "content_type": 5,
+    "codename": "view_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 21,
+  "fields": {
+    "name": "Can add user",
+    "content_type": 6,
+    "codename": "add_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 22,
+  "fields": {
+    "name": "Can change user",
+    "content_type": 6,
+    "codename": "change_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 23,
+  "fields": {
+    "name": "Can delete user",
+    "content_type": 6,
+    "codename": "delete_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 24,
+  "fields": {
+    "name": "Can view user",
+    "content_type": 6,
+    "codename": "view_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 25,
+  "fields": {
+    "name": "Can add proposal",
+    "content_type": 7,
+    "codename": "add_proposal"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 26,
+  "fields": {
+    "name": "Can change proposal",
+    "content_type": 7,
+    "codename": "change_proposal"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 27,
+  "fields": {
+    "name": "Can delete proposal",
+    "content_type": 7,
+    "codename": "delete_proposal"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 28,
+  "fields": {
+    "name": "Can view proposal",
+    "content_type": 7,
+    "codename": "view_proposal"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 29,
+  "fields": {
+    "name": "Can add review",
+    "content_type": 8,
+    "codename": "add_review"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 30,
+  "fields": {
+    "name": "Can change review",
+    "content_type": 8,
+    "codename": "change_review"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 31,
+  "fields": {
+    "name": "Can delete review",
+    "content_type": 8,
+    "codename": "delete_review"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 32,
+  "fields": {
+    "name": "Can view review",
+    "content_type": 8,
+    "codename": "view_review"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 33,
+  "fields": {
+    "name": "Can add document",
+    "content_type": 9,
+    "codename": "add_document"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 34,
+  "fields": {
+    "name": "Can change document",
+    "content_type": 9,
+    "codename": "change_document"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 35,
+  "fields": {
+    "name": "Can delete document",
+    "content_type": 9,
+    "codename": "delete_document"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 36,
+  "fields": {
+    "name": "Can view document",
+    "content_type": 9,
+    "codename": "view_document"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 37,
+  "fields": {
+    "name": "Can add meeting",
+    "content_type": 11,
+    "codename": "add_meeting"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 38,
+  "fields": {
+    "name": "Can change meeting",
+    "content_type": 11,
+    "codename": "change_meeting"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 39,
+  "fields": {
+    "name": "Can delete meeting",
+    "content_type": 11,
+    "codename": "delete_meeting"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 40,
+  "fields": {
+    "name": "Can view meeting",
+    "content_type": 11,
+    "codename": "view_meeting"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 41,
+  "fields": {
+    "name": "Can add decision log",
+    "content_type": 10,
+    "codename": "add_decisionlog"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 42,
+  "fields": {
+    "name": "Can change decision log",
+    "content_type": 10,
+    "codename": "change_decisionlog"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 43,
+  "fields": {
+    "name": "Can delete decision log",
+    "content_type": 10,
+    "codename": "delete_decisionlog"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 44,
+  "fields": {
+    "name": "Can view decision log",
+    "content_type": 10,
+    "codename": "view_decisionlog"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 45,
+  "fields": {
+    "name": "Can add notification",
+    "content_type": 12,
+    "codename": "add_notification"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 46,
+  "fields": {
+    "name": "Can change notification",
+    "content_type": 12,
+    "codename": "change_notification"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 47,
+  "fields": {
+    "name": "Can delete notification",
+    "content_type": 12,
+    "codename": "delete_notification"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 48,
+  "fields": {
+    "name": "Can view notification",
+    "content_type": 12,
+    "codename": "view_notification"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 1,
+  "fields": {
+    "app_label": "admin",
+    "model": "logentry"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 2,
+  "fields": {
+    "app_label": "auth",
+    "model": "group"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 3,
+  "fields": {
+    "app_label": "auth",
+    "model": "permission"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 4,
+  "fields": {
+    "app_label": "contenttypes",
+    "model": "contenttype"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 5,
+  "fields": {
+    "app_label": "sessions",
+    "model": "session"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 6,
+  "fields": {
+    "app_label": "users",
+    "model": "user"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 7,
+  "fields": {
+    "app_label": "proposals",
+    "model": "proposal"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 8,
+  "fields": {
+    "app_label": "reviews",
+    "model": "review"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 9,
+  "fields": {
+    "app_label": "documents",
+    "model": "document"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 10,
+  "fields": {
+    "app_label": "meetings",
+    "model": "decisionlog"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 11,
+  "fields": {
+    "app_label": "meetings",
+    "model": "meeting"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 12,
+  "fields": {
+    "app_label": "notifications",
+    "model": "notification"
+  }
+},
+{
+  "model": "users.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$Efq6PCx1QQmFybDMw62SQz$UioalVHIy6dh1WF+PtU7XEChTT2Vqxdy2kTI56u4jFw=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "erka",
+    "first_name": "Эрдэнэбаатар",
+    "last_name": "Алтангэрэл",
+    "email": "a_erka@yahoo.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-10-14T00:39:46Z",
+    "role": "CHAIR",
+    "phone_number": "86339943",
+    "department": "ШУТИС",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$B8pt977U1SvxOzAtP5W8BG$g1wvvBbLtb5NV2BmW4h3MbhjctSZN6rJT9IK0RIm63E=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "res1",
+    "first_name": "Баатар",
+    "last_name": "Болд",
+    "email": "res1@must.edu.mn",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-10-14T03:27:46Z",
+    "role": "RESEARCHER",
+    "phone_number": "",
+    "department": "Мэдээлэл Холбооны Төлөвлөлтийн Сургууль",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 3,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$wExbyOWDRlMNqFWx7UxMph$CqYTpBY0yN2BdSPsaVx9Rdz+UUkmWDsSqPXAhh586Zk=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "res2",
+    "first_name": "Сүхбаатар",
+    "last_name": "Баттулга",
+    "email": "res2@num.edu.mn",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-10-14T03:34:26Z",
+    "role": "RESEARCHER",
+    "phone_number": "",
+    "department": "МУИС",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 4,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$G7oZI4IaUye5JOK0h2RzxR$eh9JTETDt1njt0R8S11vTZi5VQdwHkkTfS76k1OSnMc=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "bat",
+    "first_name": "Бат",
+    "last_name": "Нацаг",
+    "email": "bat@num.edu.mn",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-10-15T14:22:26Z",
+    "role": "REVIEWER",
+    "phone_number": "86008601",
+    "department": "МУИС",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 5,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$oKnEBScDqjoTcpF5i1Vaz1$FbnikUwkRC7S0lqQT5hhSS3EAiWybNQsKk/pHU1Ex7Y=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "suren",
+    "first_name": "Сүрэн",
+    "last_name": "Бадам",
+    "email": "suren@must.edu.mn",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-10-16T07:28:44Z",
+    "role": "SECRETARY",
+    "phone_number": "86008602",
+    "department": "ШУТИС",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 6,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$A6eahqBzB9shkOqxs8Arjk$ICfruJeh54w5/u/BXmZA+j9V2e5pvCPBznpEPCJ8pfM=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "test_researcher",
+    "first_name": "Судлаач",
+    "last_name": "Тест",
+    "email": "researcher@test.mn",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-10-17T09:22:34Z",
+    "role": "RESEARCHER",
+    "phone_number": null,
+    "department": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 7,
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$e8Wt0JeCStFaEgaRSvLRfT$6d05LuNXjqBjfIv/xuZbhiS/7YtLrTYlltMSmiDpE5k=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "dorj",
+    "first_name": "Доржсүрэн",
+    "last_name": "Банзрагч",
+    "email": "dorj@msue.edu.mn",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-10-17T13:50:59Z",
+    "role": "REVIEWER",
+    "phone_number": "86008603",
+    "department": "МУБИС",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 1,
+  "fields": {
+    "application_no": "IRB-2026-3E88F5",
+    "title": "Кибер аюулгүй байдлын судалгаа",
+    "summary": "Энэхүү судалгаагаар эмнэлгийн системүүдийн нууцлалыг судална.",
+    "methodology": "Асуулгын болон туршилтын арга",
+    "researcher": 2,
+    "review_level": "FULL_BOARD",
+    "status": "SUBMITTED",
+    "created_at": "2026-10-14T04:31:06Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 2,
+  "fields": {
+    "application_no": "IRB-2026-5F9A1B",
+    "title": "Эрүүл мэндийн өгөгдлийн шинжилгээ",
+    "summary": "Өвчтөний мэдээллийн аюулгүй байдлыг хангах аргуудыг харьцуулах",
+    "methodology": "Тоон болон чанарын судалгаа",
+    "researcher": 2,
+    "review_level": "EXPEDITED",
+    "status": "DRAFT",
+    "created_at": "2026-10-15T01:15:00Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 3,
+  "fields": {
+    "application_no": "IRB-2026-001",
+    "title": "Эрүүл мэндийн мэдээллийн аюулгүй байдлын судалгаа",
+    "summary": "Энэхүү судалгаагаар эмнэлгийн системүүдийн нууцлалыг судална.",
+    "methodology": "Асуулгын болон туршилтын арга",
+    "researcher": 3,
+    "review_level": "FULL_BOARD",
+    "status": "SUBMITTED",
+    "created_at": "2026-10-14T05:36:28Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 4,
+  "fields": {
+    "application_no": "IRB-2026-9B4D2C",
+    "title": "Хиймэл оюун ухаан болон эмнэлгийн оношилгоо",
+    "summary": "AI алгоритмуудын оношилгооны нарийвчлалыг үнэлэх",
+    "methodology": "Туршилтын судалгаа",
+    "researcher": 3,
+    "review_level": "FULL_BOARD",
+    "status": "DRAFT",
+    "created_at": "2026-10-16T03:20:00Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 5,
+  "fields": {
+    "application_no": "IRB-2026-F3B1AF",
+    "title": "Доржийн судалгаа 1",
+    "summary": "Монголын хөдөө орон нутгийн эрүүл мэндийн үйлчилгээний хүртээмж",
+    "methodology": "Асуулга, ярилцлага",
+    "researcher": 6,
+    "review_level": "EXEMPTED",
+    "status": "SUBMITTED",
+    "created_at": "2026-10-19T05:01:43Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 6,
+  "fields": {
+    "application_no": "IRB-2026-7A1C8E",
+    "title": "Ахмад настны асаргаа сувилгааны загвар",
+    "summary": "Ахмад настны гэрийн асаргааны хэрэгцээнд тулгуурласан загвар боловсруулах",
+    "methodology": "Ажиглалт, баримт бичгийн шинжилгээ",
+    "researcher": 6,
+    "review_level": "EXPEDITED",
+    "status": "DRAFT",
+    "created_at": "2026-10-20T06:45:00Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 7,
+  "fields": {
+    "application_no": "IRB-2026-7C74D2",
+    "title": "Эркагийн шинэ төсөл",
+    "summary": "Их сургуулийн оюутнуудын сэтгэцийн эрүүл мэнд",
+    "methodology": "Сэтгэл зүйн сорил, статистик шинжилгээ",
+    "researcher": 7,
+    "review_level": "EXEMPTED",
+    "status": "SUBMITTED",
+    "created_at": "2026-10-21T07:18:32Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 8,
+  "fields": {
+    "application_no": "IRB-2026-D4E6F8",
+    "title": "Цахим сургалтын үр ашгийн судалгаа",
+    "summary": "Ковид-19-ийн дараах цахим сургалтын нөлөөллийг судлах",
+    "methodology": "Харьцуулсан шинжилгээ",
+    "researcher": 7,
+    "review_level": "EXEMPTED",
+    "status": "DRAFT",
+    "created_at": "2026-10-22T02:05:00Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 9,
+  "fields": {
+    "application_no": "IRB-2026-1BE7BD",
+    "title": "МХТ-ийн бодлогын хэрэгжилтийн судалгаа",
+    "summary": "Мэдээлэл холбооны салбарын инновацийн бодлого",
+    "methodology": "Баримт бичгийн шинжилгээ",
+    "researcher": 1,
+    "review_level": "EXEMPTED",
+    "status": "SUBMITTED",
+    "created_at": "2026-10-26T03:06:37Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 10,
+  "fields": {
+    "application_no": "IRB-2026-C5A3B1",
+    "title": "Ухаалаг хотын төлөвлөлт",
+    "summary": "Улаанбаатар хотын замын хөдөлгөөний удирдлагын системийг сайжруулах",
+    "methodology": "Загварчлал, оновчлол",
+    "researcher": 1,
+    "review_level": "EXPEDITED",
+    "status": "DRAFT",
+    "created_at": "2026-10-26T08:30:00Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 11,
+  "fields": {
+    "application_no": "IRB-2026-FDCA39",
+    "title": "Оюутны үйлчилгээний судалгаа",
+    "summary": "Оюутны дотуур байрны нөхцөл байдлын судалгаа",
+    "methodology": "Асуулга, ярилцлага",
+    "researcher": 4,
+    "review_level": "EXEMPTED",
+    "status": "SUBMITTED",
+    "created_at": "2026-10-26T03:23:04Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 12,
+  "fields": {
+    "application_no": "IRB-2026-8E3A7D",
+    "title": "Сургалтын орчны эргономик",
+    "summary": "Ширээ, сандлын хэмжээний сургалтын үр дүнд үзүүлэх нөлөө",
+    "methodology": "Хэмжилт, туршилт",
+    "researcher": 4,
+    "review_level": "EXPEDITED",
+    "status": "DRAFT",
+    "created_at": "2026-10-27T01:15:00Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 13,
+  "fields": {
+    "application_no": "IRB-2026-DED73D",
+    "title": "Суралцах орчны судалгаа",
+    "summary": "Их сургуулийн кампусын ногоон байгууламж",
+    "methodology": "Байгаль орчны үнэлгээ",
+    "researcher": 5,
+    "review_level": "EXEMPTED",
+    "status": "SUBMITTED",
+    "created_at": "2026-10-26T05:09:14Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+},
+{
+  "model": "proposals.proposal",
+  "pk": 14,
+  "fields": {
+    "application_no": "IRB-2026-F1C5E9",
+    "title": "Хог хаягдлын менежментийн судалгаа",
+    "summary": "Сургуулийн орчны хог хаягдлыг бууруулах арга зам",
+    "methodology": "Ажиглалт, санал асуулга",
+    "researcher": 5,
+    "review_level": "EXEMPTED",
+    "status": "DRAFT",
+    "created_at": "2026-10-27T06:20:00Z",
+    "updated_at": "2026-11-05T14:10:12Z",
+    "reviewers": []
+  }
+}
+]
