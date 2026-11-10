@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { getProposalDocuments, uploadProposalDocument, deleteProposalDocument } from '@/services/proposalService';
+import React, { useState, useEffect, useCallback } from "react";
+import { getProposalDocuments, uploadProposalDocument, deleteProposalDocument } from "@/services/proposalService";
 
 interface DocumentItem {
   id: number;
@@ -15,25 +15,28 @@ interface DocumentItem {
 interface DocumentsListProps {
   proposalId: string | number;
   status: string;
+  isEditing?: boolean; // ШИНЭЭР НЭМСЭН: Засах горим асаалттай эсэхийг хүлээж авна
 }
 
 const DOCUMENT_TYPES = [
-  { value: 'PROTOCOL', label: 'Судалгааны протокол / Маягт' },
-  { value: 'CONSENT_FORM', label: 'Зөвшөөрлийн хуудас' },
-  { value: 'QUESTIONNAIRE', label: 'Асуулга / Тайлбар' },
-  { value: 'APPROVAL_LETTER', label: 'Эцсийн батламж / Шийдвэр' },
-  { value: 'OTHER', label: 'Бусад хавсралт' },
+  { value: "PROTOCOL", label: "Судалгааны протокол / Маягт" },
+  { value: "CONSENT_FORM", label: "Зөвшөөрлийн хуудас" },
+  { value: "QUESTIONNAIRE", label: "Асуулга / Тайлбар" },
+  { value: "APPROVAL_LETTER", label: "Эцсийн батламж / Шийдвэр" },
+  { value: "OTHER", label: "Бусад хавсралт" },
 ];
 
-export const DocumentsList: React.FC<DocumentsListProps> = ({ proposalId, status }) => {
+export const DocumentsList: React.FC<DocumentsListProps> = ({ proposalId, status, isEditing = false }) => {
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [uploading, setUploading] = useState<boolean>(false);
-  const [selectedType, setSelectedType] = useState<string>('PROTOCOL');
+  const [selectedType, setSelectedType] = useState<string>("PROTOCOL");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const isEditable = status === 'DRAFT' || status === 'NEEDS_REVISION';
+  // ЗАСВАР: Төлөв нь зөвшөөрөгдсөн БӨГӨӨД хэрэглэгч "Засах" товч дарсан үед л файлыг засна
+  const isStatusEditable = status === "DRAFT" || status === "REVISION_REQUIRED";
+  const isEditable = isStatusEditable && isEditing;
 
   const fetchDocuments = useCallback(async () => {
     try {
@@ -43,7 +46,7 @@ export const DocumentsList: React.FC<DocumentsListProps> = ({ proposalId, status
       setDocuments(data);
     } catch (err: any) {
       console.error("Fetch docs error:", err);
-      setError('Баримт бичгүүдийг татахад алдаа гарлаа.');
+      setError("Баримт бичгүүдийг татахад алдаа гарлаа.");
     } finally {
       setLoading(false);
     }
@@ -58,44 +61,44 @@ export const DocumentsList: React.FC<DocumentsListProps> = ({ proposalId, status
   const handleFileUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) {
-      alert('Файлаа сонгоно уу!');
+      alert("Файлаа сонгоно уу!");
       return;
     }
 
     try {
       setUploading(true);
       setError(null);
-      
+
       await uploadProposalDocument(proposalId, selectedFile, selectedType);
-      
+
       setSelectedFile(null);
-      const fileInput = document.getElementById('file-input') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
+      const fileInput = document.getElementById("file-input") as HTMLInputElement;
+      if (fileInput) fileInput.value = "";
 
       await fetchDocuments();
     } catch (err: any) {
       console.error("Upload error:", err);
-      alert('Файл хуулахад алдаа гарлаа. Төслийн төлөв баримт бичих боломжтой эсэхийг шалгана уу.');
+      alert("Файл хуулахад алдаа гарлаа. Төслийн төлөв баримт бичих боломжтой эсэхийг шалгана уу.");
     } finally {
       setUploading(false);
     }
   };
 
   const handleDelete = async (docId: number) => {
-    if (!confirm('Энэ баримт бичгийг устгахдаа итгэлтэй байна уу?')) return;
+    if (!confirm("Энэ баримт бичгийг устгахдаа итгэлтэй байна уу?")) return;
 
     try {
       await deleteProposalDocument(docId);
       await fetchDocuments();
     } catch (err: any) {
       console.error("Delete error:", err);
-      alert('Файл устгахад алдаа гарлаа.');
+      alert("Файл устгахад алдаа гарлаа.");
     }
   };
 
   const getFileNameFromUrl = (url: string) => {
-    if (!url) return 'Баримт бичиг';
-    return url.split('/').pop() || 'Баримт бичиг';
+    if (!url) return "Баримт бичиг";
+    return url.split("/").pop() || "Баримт бичиг";
   };
 
   return (
@@ -103,9 +106,7 @@ export const DocumentsList: React.FC<DocumentsListProps> = ({ proposalId, status
       <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center justify-between">
         <span>📄 Хавсаргасан баримт бичгүүд</span>
         {!isEditable && (
-          <span className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full font-normal">
-            🔒 Зөвхөн унших горим
-          </span>
+          <span className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full font-normal">🔒 Зөвхөн унших горим</span>
         )}
       </h2>
 
@@ -121,7 +122,9 @@ export const DocumentsList: React.FC<DocumentsListProps> = ({ proposalId, status
                 className="w-full text-sm border-gray-300 rounded-md p-2 border focus:ring-blue-500 focus:border-blue-500"
               >
                 {DOCUMENT_TYPES.map((type) => (
-                  <option key={type.value} value={type.value}>{type.label}</option>
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -143,7 +146,7 @@ export const DocumentsList: React.FC<DocumentsListProps> = ({ proposalId, status
                 disabled={uploading}
                 className="w-full bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
               >
-                {uploading ? 'Хуулж байна...' : 'Хуулах / Хавсаргах'}
+                {uploading ? "Хуулж байна..." : "Хуулах / Хавсаргах"}
               </button>
             </div>
           </div>
@@ -172,17 +175,18 @@ export const DocumentsList: React.FC<DocumentsListProps> = ({ proposalId, status
             <tbody className="bg-white divide-y divide-gray-200">
               {documents.map((doc) => (
                 <tr key={doc.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {doc.document_type_display}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                    {getFileNameFromUrl(doc.file)}
-                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{doc.document_type_display}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{getFileNameFromUrl(doc.file)}</td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(doc.uploaded_at).toLocaleDateString('mn-MN')}
+                    {new Date(doc.uploaded_at).toLocaleDateString("mn-MN")}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                    <a href={doc.file} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-900 inline-flex items-center gap-1">
+                    <a
+                      href={doc.file}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-900 inline-flex items-center gap-1"
+                    >
                       Татах / Харах
                     </a>
                     {isEditable && (

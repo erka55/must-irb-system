@@ -41,13 +41,15 @@ class ProposalViewSet(viewsets.ModelViewSet):
         # 2. Хурал товлох модалын шүүлтүүр (ready_for_meeting)
         ready_for_meeting = self.request.query_params.get("ready_for_meeting", None)
         if ready_for_meeting == "true":
-            # Зөвхөн UNDER_REVIEW төлөвтэй бөгөөд бүх шүүмжлэгч дүгнэлтээ өгсөн төслүүд
             base_queryset = (
                 base_queryset.filter(status="UNDER_REVIEW")
                 .annotate(
                     total_assignments=Count("reviewers", distinct=True),
+                    # ЗАСВАР: Шүүмжийн тоог биш, шүүмж өгсөн 'шүүмжлэгчдийн' тоог тоолно (давхардал үүссэн ч нэг хүн гэж үзнэ)
                     completed_reviews=Count(
-                        "reviews", filter=Q(reviews__is_completed=True), distinct=True
+                        "reviews__reviewer",
+                        filter=Q(reviews__is_completed=True),
+                        distinct=True,
                     ),
                 )
                 .filter(
@@ -198,13 +200,28 @@ class ProposalViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Төлөвийг SUBMITTED болгож хадгалах
-        proposal.status = "SUBMITTED"
+        # Төлөвийг шалгаж өөр өөрөөр хадгалах (ЗАСВАР ОРСОН ХЭСЭГ)
+        if proposal.status == "REVISION_REQUIRED":
+            # Засварлаад буцааж байгаа бол шууд ХЯНАГДАЖ БАЙГАА руу оруулж, шүүмжлэгчдийн эрхийг нээнэ
+            proposal.status = "UNDER_REVIEW"
+            message = (
+                "Засварласан төсөл амжилттай илгээгдлээ. Шүүмжлэгчид дахин хянах болно."
+            )
+
+            # (Нэмэлт логик: Шүүмжлэгчид дахин хянах болсон тул тэдний өмнөх 'Review' үнэлгээнүүдийн
+            # 'is_completed' төлөвийг False болгож нээх эсвэл шинээр үүсгэх логик энд байж болно.
+            # Одоогоор зөвхөн Proposal статусыг шилжүүлье)
+
+        else:
+            # Шинэ төсөл (DRAFT) илгээж байгаа бол SUBMITTED (Нарийн бичиг рүү) очино
+            proposal.status = "SUBMITTED"
+            message = "Төсөл амжилттай илгээгдлээ. Нарийн бичиг шалгаж эхлэх болно."
+
         proposal.save()
 
         return Response(
             {
-                "detail": "Төсөл амжилттай илгээгдлээ. Нарийн бичиг шалгаж эхлэх болно.",
+                "detail": message,
                 "status": proposal.status,
             },
             status=status.HTTP_200_OK,

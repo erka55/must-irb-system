@@ -5,7 +5,7 @@ import api from "@/services/proposalService";
 
 interface EditMeetingModalProps {
   isOpen: boolean;
-  meeting: any; // Засах гэж буй хурлын дата
+  meeting: any;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -21,25 +21,34 @@ export default function EditMeetingModal({ isOpen, meeting, onClose, onSuccess }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Түгжих нөхцөлүүд
+  const isContentLocked = meeting?.status === "IN_PROGRESS" || meeting?.status === "COMPLETED" || meeting?.status === "CANCELLED";
+  const isFullyLocked = meeting?.status === "COMPLETED" || meeting?.status === "CANCELLED";
+
+  // Хурлын шийдвэрүүд гүйцэд гарсан эсэхийг шалгах
+  const totalProposals = meeting?.proposals?.length || 0;
+  const totalDecisions = meeting?.decisions?.length || 0;
+  // Хэрэв төсөл огт байхгүй бол шууд өндөрлөж болно, харин төсөл байгаа бол бүх шийдвэр гарсан байх ёстой
+  const canComplete = totalProposals === 0 || totalDecisions >= totalProposals;
+
   useEffect(() => {
     if (isOpen && meeting) {
       setTitle(meeting.title || "");
-      // Огноог input type="datetime-local" -д тааруулж форматлах (YYYY-MM-DDThh:mm)
       const formattedDate = meeting.meeting_date ? new Date(meeting.meeting_date).toISOString().slice(0, 16) : "";
       setMeetingDate(formattedDate);
       setLocation(meeting.location || "");
       setStatus(meeting.status || "SCHEDULED");
-      // Төслүүдийг татах
+
       const fetchProposals = async () => {
         try {
           const res = await api.get("/proposals/");
-          // Энэ хуралд аль хэдийн орсон төслүүд эсвэл шинээр нэмэхэд бэлэн болсон (is_ready: true) төслүүдийг харуулах
           const selectableProposals = res.data.filter(
             (p: any) =>
-              (p.status === "UNDER_REVIEW" && p.review_progress?.is_ready === true) ||
-              (meeting.proposals && meeting.proposals.includes(p.id))
+              (p.status === "UNDER_REVIEW" && p.review_progress?.is_ready === true && !p.is_scheduled) ||
+              (meeting.proposals && meeting.proposals.includes(p.id)),
           );
           setAvailableProposals(selectableProposals);
+          if (meeting.proposals) setSelectedProposals(meeting.proposals);
         } catch (err) {
           console.error("Төслүүд татахад алдаа гарлаа:", err);
         }
@@ -52,6 +61,8 @@ export default function EditMeetingModal({ isOpen, meeting, onClose, onSuccess }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isFullyLocked) return;
+
     setLoading(true);
     setError(null);
 
@@ -73,6 +84,8 @@ export default function EditMeetingModal({ isOpen, meeting, onClose, onSuccess }
   };
 
   const handleCheckboxChange = (proposalId: number) => {
+    if (isContentLocked) return; // Түгжигдсэн үед чагтлах үйлдлийг зогсоох
+
     if (selectedProposals.includes(proposalId)) {
       setSelectedProposals(selectedProposals.filter((id) => id !== proposalId));
     } else {
@@ -84,11 +97,17 @@ export default function EditMeetingModal({ isOpen, meeting, onClose, onSuccess }
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
       <div className="bg-white rounded-lg p-6 w-full max-w-lg shadow-xl">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-800">Хурлын тов засах</h2>
+          <h2 className="text-xl font-bold text-gray-800">{isContentLocked ? "Хурлын төлөв өөрчлөх" : "Хурлын тов засах"}</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-xl font-bold">
             &times;
           </button>
         </div>
+
+        {isContentLocked && !isFullyLocked && (
+          <div className="mb-4 bg-blue-50 text-blue-700 p-3 rounded text-sm">
+            Хурал эхэлсэн тул мэдээллийг өөрчлөх боломжгүй. Зөвхөн хурлын төлвийг өөрчлөх боломжтой.
+          </div>
+        )}
 
         {error && <div className="mb-4 bg-red-50 text-red-600 p-3 rounded text-sm">{error}</div>}
 
@@ -98,9 +117,10 @@ export default function EditMeetingModal({ isOpen, meeting, onClose, onSuccess }
             <input
               type="text"
               required
+              disabled={isContentLocked}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 outline-none"
+              className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500"
             />
           </div>
 
@@ -110,18 +130,20 @@ export default function EditMeetingModal({ isOpen, meeting, onClose, onSuccess }
               <input
                 type="datetime-local"
                 required
+                disabled={isContentLocked}
                 value={meetingDate}
                 onChange={(e) => setMeetingDate(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 outline-none"
+                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Байршил / Холбоос</label>
               <input
                 type="text"
+                disabled={isContentLocked}
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 outline-none"
+                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 outline-none disabled:bg-gray-100 disabled:text-gray-500"
               />
             </div>
           </div>
@@ -131,30 +153,40 @@ export default function EditMeetingModal({ isOpen, meeting, onClose, onSuccess }
               <label className="block text-sm font-medium text-gray-700 mb-1">Төлөв</label>
               <select
                 value={status}
+                disabled={isFullyLocked}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 outline-none bg-white"
+                className="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 outline-none bg-white disabled:bg-gray-100 disabled:text-gray-500"
               >
                 <option value="SCHEDULED">Товлогдсон</option>
                 <option value="IN_PROGRESS">Явагдаж байгаа</option>
-                <option value="COMPLETED">Өндөрлөсөн</option>
+
+                {/* Шийдвэр дутуу үед сонгох боломжгүй (disabled) болгож сааралтуулна */}
+                <option value="COMPLETED" disabled={!canComplete}>
+                  Өндөрлөсөн {!canComplete ? "(Шийдвэр дутуу)" : ""}
+                </option>
+
                 <option value="CANCELLED">Цуцлагдсан</option>
               </select>
             </div>
           </div>
 
           <div className="mt-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Хэлэлцэх төслүүд (Өөрчлөх)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Хэлэлцэх төслүүд</label>
             <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2 space-y-2 bg-gray-50">
               {availableProposals.length === 0 ? (
                 <p className="text-xs text-gray-500 text-center py-4">Сонгох төсөл олдсонгүй.</p>
               ) : (
                 availableProposals.map((proposal) => (
-                  <label key={proposal.id} className="flex items-start gap-3 cursor-pointer p-2 hover:bg-gray-100 rounded">
+                  <label
+                    key={proposal.id}
+                    className={`flex items-start gap-3 p-2 rounded ${isContentLocked ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:bg-gray-100"}`}
+                  >
                     <input
                       type="checkbox"
+                      disabled={isContentLocked}
                       checked={selectedProposals.includes(proposal.id)}
                       onChange={() => handleCheckboxChange(proposal.id)}
-                      className="mt-1 h-4 w-4 text-blue-600 rounded"
+                      className="mt-1 h-4 w-4 text-blue-600 rounded disabled:bg-gray-200"
                     />
                     <span className="text-sm text-gray-700 leading-tight">
                       <span className="font-semibold block text-xs text-blue-800">#{proposal.application_no || proposal.id}</span>
@@ -173,11 +205,17 @@ export default function EditMeetingModal({ isOpen, meeting, onClose, onSuccess }
               disabled={loading}
               className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium"
             >
-              Цуцлах
+              Хаах
             </button>
-            <button type="submit" disabled={loading} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">
-              {loading ? "Хадгалж байна..." : "Өөрчлөлтийг хадгалах"}
-            </button>
+            {!isFullyLocked && (
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
+              >
+                {loading ? "Хадгалж байна..." : "Өөрчлөлтийг хадгалах"}
+              </button>
+            )}
           </div>
         </form>
       </div>

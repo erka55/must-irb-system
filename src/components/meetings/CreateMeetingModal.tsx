@@ -26,8 +26,10 @@ export default function CreateMeetingModal({ isOpen, onClose, onSuccess }: Creat
       const fetchProposals = async () => {
         try {
           const res = await api.get("/proposals/");
-          // ЗӨВХӨН бүх шүүмжлэгч шүүмжээ өгч дууссан (is_ready: true) төслүүдийг л хуралд товлох боломжтой
-          const pendingProposals = res.data.filter((p: any) => p.status === "UNDER_REVIEW" && p.review_progress?.is_ready === true);
+          // ЗӨВХӨН бүх шүүмжлэгч шүүмжээ өгч дууссан (is_ready: true) товлогдоогүй төслүүдийг л хуралд товлох
+          const pendingProposals = res.data.filter(
+            (p: any) => p.status === "UNDER_REVIEW" && p.review_progress?.is_ready === true && !p.is_scheduled,
+          );
 
           setAvailableProposals(pendingProposals);
         } catch (err) {

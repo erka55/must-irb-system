@@ -3,12 +3,14 @@ from .models import Proposal
 from documents.serializers import DocumentSerializer
 from reviews.serializers import ReviewSerializer
 from meetings.serializers import DecisionLogSerializer
+from meetings.models import Meeting
 
 
 class ProposalSerializer(serializers.ModelSerializer):
     researcher_name = serializers.SerializerMethodField()
     reviewers = serializers.SerializerMethodField()
-    review_progress = serializers.SerializerMethodField()  # <--- Шинээр нэмэв
+    review_progress = serializers.SerializerMethodField()
+    is_scheduled = serializers.SerializerMethodField()
 
     def get_researcher_name(self, obj):
         if obj.researcher:
@@ -30,6 +32,7 @@ class ProposalSerializer(serializers.ModelSerializer):
         return []
 
     # <--- Прогресс тооцоолох функцийг Фронтэндтэй тааруулж шинэчлэв --->
+    # <--- Прогресс тооцоолох функцийг Фронтэндтэй тааруулж шинэчлэв --->
     def get_review_progress(self, obj):
         if not hasattr(obj, "reviewers") or not hasattr(obj, "reviews"):
             return None
@@ -45,16 +48,19 @@ class ProposalSerializer(serializers.ModelSerializer):
                 "details": [],
             }
 
-        # completed_count нь зөвхөн is_completed=True байгаа дүгнэлтүүдийг тоолно
-        completed = obj.reviews.filter(is_completed=True).count()
-
-        # Шүүмжлэгч тус бүрийн мэдээллийг жагсаалт болгох
+        # ЗАСВАР: Шүүмжүүдийг нийтэд нь биш, шүүмжлэгч тус бүрээр тоолно
+        completed_count = 0
         details = []
+
         for reviewer in reviewers:
             # Тухайн шүүмжлэгч эцсийн дүгнэлтээ (is_completed=True) оруулсан эсэх
             has_submitted = obj.reviews.filter(
                 reviewer=reviewer, is_completed=True
             ).exists()
+
+            if has_submitted:
+                completed_count += 1
+
             name = (
                 f"{reviewer.first_name} {reviewer.last_name}".strip()
                 or reviewer.username
@@ -64,10 +70,15 @@ class ProposalSerializer(serializers.ModelSerializer):
 
         return {
             "total_reviewers": total,
-            "completed_count": completed,
-            "is_ready": total > 0 and total == completed,
+            "completed_count": completed_count,
+            # Одоо completed_count нь зөвхөн давхардаагүй хүний тоог заах тул is_ready зөв ажиллана
+            "is_ready": total > 0 and total == completed_count,
             "details": details,
         }
+
+    def get_is_scheduled(self, obj):
+        # Ямар ч төлөвтэй байсан хамаагүй, тухайн төсөл ямар нэгэн хуралд орсон л бол True буцаана
+        return Meeting.objects.filter(proposals=obj).exists()
 
     status_display = serializers.CharField(source="get_status_display", read_only=True)
 
@@ -92,5 +103,6 @@ class ProposalSerializer(serializers.ModelSerializer):
             "documents",
             "reviews",
             "final_decisions",
+            "is_scheduled",
         ]
         read_only_fields = ["researcher", "created_at", "updated_at"]

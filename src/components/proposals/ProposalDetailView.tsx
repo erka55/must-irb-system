@@ -106,6 +106,9 @@ export function ProposalDetailView({ id }: { id: string }) {
     }
   };
 
+  // Төсөл засаж/илгээж болох төлөвт байгаа эсэхийг шалгах
+  const canEdit = proposal?.status === "DRAFT" || proposal?.status === "REVISION_REQUIRED";
+
   return (
     <RoleGuard allowedRoles={["RESEARCHER", "REVIEWER", "CHAIR", "SECRETARY", "ADMIN"]}>
       <DashboardLayout>
@@ -155,19 +158,17 @@ export function ProposalDetailView({ id }: { id: string }) {
                     </span>
 
                     <div className="flex gap-2 mt-2">
-                      {user?.id === proposal.researcher &&
-                        (proposal.status === "DRAFT" || proposal.status === "REVISION_REQUIRED") &&
-                        !isEditing && (
-                          <button
-                            onClick={handleSubmitProposal}
-                            disabled={isSubmitting || isDeleting}
-                            className="bg-green-600 text-white px-4 py-2 rounded-md font-semibold text-sm hover:bg-green-700 disabled:opacity-50 transition-colors shadow-sm"
-                          >
-                            {isSubmitting ? "Илгээж байна..." : "Төслийг илгээх (Submit)"}
-                          </button>
-                        )}
+                      {user?.id === proposal.researcher && canEdit && !isEditing && (
+                        <button
+                          onClick={handleSubmitProposal}
+                          disabled={isSubmitting || isDeleting}
+                          className="bg-green-600 text-white px-4 py-2 rounded-md font-semibold text-sm hover:bg-green-700 disabled:opacity-50 transition-colors shadow-sm"
+                        >
+                          {isSubmitting ? "Илгээж байна..." : "Төслийг илгээх (Submit)"}
+                        </button>
+                      )}
 
-                      {user?.id === proposal.researcher && proposal.status === "DRAFT" && (
+                      {user?.id === proposal.researcher && canEdit && (
                         <>
                           {isEditing ? (
                             <>
@@ -195,13 +196,15 @@ export function ProposalDetailView({ id }: { id: string }) {
                               >
                                 Засах
                               </button>
-                              <button
-                                onClick={handleDeleteProposal}
-                                disabled={isSubmitting || isDeleting}
-                                className="bg-red-600 text-white px-4 py-2 rounded-md font-semibold text-sm hover:bg-red-700 disabled:opacity-50 transition-colors shadow-sm"
-                              >
-                                {isDeleting ? "Устгаж байна..." : "Устгах"}
-                              </button>
+                              {proposal.status === "DRAFT" && (
+                                <button
+                                  onClick={handleDeleteProposal}
+                                  disabled={isSubmitting || isDeleting}
+                                  className="bg-red-600 text-white px-4 py-2 rounded-md font-semibold text-sm hover:bg-red-700 disabled:opacity-50 transition-colors shadow-sm"
+                                >
+                                  {isDeleting ? "Устгаж байна..." : "Устгах"}
+                                </button>
+                              )}
                             </>
                           )}
                         </>
@@ -243,17 +246,23 @@ export function ProposalDetailView({ id }: { id: string }) {
 
                 {/* ШҮҮМЖЛЭГЧИЙН ДҮГНЭЛТ ОРУУЛАХ ХЭСЭГ */}
                 {(() => {
-                  const isAuthorizedRole = ["REVIEWER", "CHAIR", "SECRETARY"].includes(user?.role);
+                  const isAuthorizedRole = ["REVIEWER", "CHAIR", "SECRETARY"].includes(user?.role || "");
                   const isAssignedReviewer = proposal.reviewers?.some((reviewer: any) => String(reviewer.id) === String(user?.id));
                   const isUnderReview = proposal.status === "UNDER_REVIEW";
 
+                  // 1. Тухайн хэрэглэгчийн БҮХ шүүмжийг шүүж авах
+                  const userReviews = proposal.reviews?.filter((review: any) => String(review.reviewer) === String(user?.id)) || [];
+
+                  // 2. ID-гаар нь бууруулах дарааллаар эрэмбэлээд хамгийн эхнийхийг буюу сүүлд бичигдсэнийг нь авах
+                  const currentUserReview = userReviews.sort((a: any, b: any) => b.id - a.id)[0];
+
                   return isAuthorizedRole && isAssignedReviewer && isUnderReview ? (
-                    <ReviewEvaluation proposalId={id} onUpdate={fetchProposal} />
+                    <ReviewEvaluation proposalId={id} existingReview={currentUserReview} onUpdate={fetchProposal} />
                   ) : null;
                 })()}
 
                 {/* БАРИМТ БИЧГИЙН МОДУЛЬ */}
-                <DocumentsList proposalId={id} status={proposal.status} />
+                <DocumentsList proposalId={id} status={proposal.status} isEditing={isEditing} />
               </div>
             </div>
           )}

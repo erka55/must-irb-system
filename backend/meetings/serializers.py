@@ -29,7 +29,7 @@ class DecisionLogSerializer(serializers.ModelSerializer):
             "decision",
             "decision_display",
             "meeting_minutes",
-            "protocol_file",  # <--- ЭНЭ МӨРИЙГ ШИНЭЭР НЭМЛЭЭ
+            "protocol_file",
             "recorded_by",
             "recorded_by_name",
             "created_at",
@@ -47,7 +47,7 @@ class MeetingSerializer(serializers.ModelSerializer):
         many=True, queryset=Proposal.objects.all(), required=False
     )
 
-    # 1. ШИНЭЭР НЭМЭХ: Хэлэлцэх төслүүдийн дэлгэрэнгүйг унших талбар
+    # Хэлэлцэх төслүүдийн дэлгэрэнгүйг унших талбар
     proposals_detail = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -60,42 +60,90 @@ class MeetingSerializer(serializers.ModelSerializer):
             "status",
             "status_display",
             "proposals",
-            "proposals_detail",  # 2. ЭНД НЭМЖ БИЧИХЭЭ МАРТУУЗАЙ!
+            "proposals_detail",  # ЭНД БАЙГАА
             "decisions",
             "created_at",
             "updated_at",
         ]
 
-    # 3. ШИНЭЭР НЭМЭХ: ID-нуудаар нь хөөж төслийн мэдээллийг угсарч буцаах функц
+    # ШИНЭЧЛЭГДСЭН: Эрх шалгаж, шүүмжүүдийг хавсаргаж буцаах
     def get_proposals_detail(self, obj):
-        return [
-            {
-                "id": p.id,
-                "application_no": getattr(p, "application_no", str(p.id)),
-                "title": p.title,
-            }
-            for p in obj.proposals.all()
-        ]
+        request = self.context.get("request")
+        user = request.user if request else None
 
-    # 2. Шинээр үүсгэх үед хадгалах
+        detail_list = []
+        for p in obj.proposals.all():
+            # 1. ЭРХИЙН ХЯЗГААРЛАЛТ: Судлаач хүн зөвхөн өөрийнхөө төслийг л харна
+            if user and getattr(user, "role", None) in ["PI", "RESEARCHER"]:
+                if p.researcher != user:
+                    continue  # Бусдын төслийг алгасах
+
+            # 2. ШҮҮМЖҮҮДИЙГ АВАХ: Зөвхөн илгээгдсэн (is_completed=True) шүүмжүүдийг хавсаргах
+            reviews_data = []
+            if hasattr(p, "reviews"):
+                for rev in p.reviews.filter(is_completed=True):
+                    reviewer_name = (
+                        rev.reviewer.get_full_name() or rev.reviewer.username
+                        if rev.reviewer
+                        else "Тодорхойгүй"
+                    )
+
+                    # ЗАССАН ХЭСЭГ: recommendation биш decision гэж дуудна
+                    reviews_data.append(
+                        {
+                            "reviewer_name": reviewer_name,
+                            "recommendation_display": (
+                                rev.get_decision_display()
+                                if hasattr(rev, "get_decision_display")
+                                else getattr(rev, "decision", "")
+                            ),
+                            "comments": getattr(rev, "comments", ""),
+                        }
+                    )
+
+            detail_list.append(
+                {
+                    "id": p.id,
+                    "application_no": getattr(p, "application_no", str(p.id)),
+                    "title": p.title,
+                    "researcher_name": (
+                        p.researcher.get_full_name() or p.researcher.username
+                        if p.researcher
+                        else ""
+                    ),
+                    "reviews": reviews_data,
+                }
+            )
+
+        return detail_list
+
     def create(self, validated_data):
-        # Баталгаажсан (Proposal объект болж хувирсан) төслүүдийг салгаж авах
         proposals = validated_data.pop("proposals", [])
-        # Үндсэн хурлаа үүсгэх
         meeting = super().create(validated_data)
-        # Төслүүдээ хүчээр холбож хадгалах
         meeting.proposals.set(proposals)
         return meeting
 
-    # 3. Засварлах үед хадгалах
     def update(self, instance, validated_data):
-        # Баталгаажсан төслүүдийг салгаж авах
         proposals = validated_data.pop("proposals", None)
-        # Үндсэн хурлаа засах
         instance = super().update(instance, validated_data)
 
-        # Хэрэв фронтоос төслүүд илгээгдсэн байвал холбоосыг шинэчлэх
         if proposals is not None:
             instance.proposals.set(proposals)
 
         return instance
+
+    def validate(self, attrs):
+        if self.instance and attrs.get("status") == "COMPLETED":
+            total_proposals = self.instance.proposals.count()
+            decided_proposals = (
+                self.instance.decisions.values("proposal").distinct().count()
+            )
+
+            if decided_proposals < total_proposals:
+                raise serializers.ValidationError(
+                    {
+                        "status": f"Нийт {total_proposals} төслөөс {decided_proposals} шийдвэр гарсан байна. Бүх төслийн шийдвэр гарсны дараа хурлыг өндөрлөх боломжтой."
+                    }
+                )
+
+        return attrs

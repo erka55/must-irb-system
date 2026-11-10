@@ -89,22 +89,25 @@ class MeetingViewSet(viewsets.ModelViewSet):
             "meeting_minutes": minutes,
             "recorded_by": request.user,
         }
-        
+
         # Хэрэв шинээр файл оруулсан бол түүнийг нь шинэчилнэ, үгүй бол хуучныг нь хэвээр үлдээнэ
         if protocol_file:
             defaults_data["protocol_file"] = protocol_file
 
         decision_log, created = DecisionLog.objects.update_or_create(
-            meeting=meeting,
-            proposal=proposal,
-            defaults=defaults_data
+            meeting=meeting, proposal=proposal, defaults=defaults_data
         )
 
         # 3. УХААЛАГ ТӨЛӨВ ШИНЭЧЛЭХ ХЭСЭГ:
         # Тухайн хуралд хэлэлцэхээр товлосон нийт төслийн тоо
         total_proposals = meeting.proposals.count()
         # Одоогоор шийдвэр нь бүртгэгдсэн төслүүдийн тоо
-        decided_proposals = DecisionLog.objects.filter(meeting=meeting).values('proposal').distinct().count()
+        decided_proposals = (
+            DecisionLog.objects.filter(meeting=meeting)
+            .values("proposal")
+            .distinct()
+            .count()
+        )
 
         if decided_proposals >= total_proposals:
             # Бүх төслийн шийдвэр гарсан бол хурлыг "Өндөрлөсөн" болгох
@@ -136,6 +139,39 @@ class MeetingViewSet(viewsets.ModelViewSet):
         return Response(
             DecisionLogSerializer(decision_log).data, status=status.HTTP_201_CREATED
         )
+
+    def perform_destroy(self, instance):
+        """1. Хурал устгах үед холбогдсон төслүүдийг буцааж чөлөөлөх"""
+        for proposal in instance.proposals.all():
+            # Шийдвэр гаргаж баталгаажаагүй төслүүдийг буцаагаад UNDER_REVIEW төлөвт оруулна
+            if proposal.status not in [
+                Proposal.Status.APPROVED,
+                Proposal.Status.REJECTED,
+                Proposal.Status.REVISION_REQUIRED,
+            ]:
+                proposal.status = Proposal.Status.UNDER_REVIEW
+                proposal.save()
+
+        # Үүний дараа хурлыг баазаас устгана
+        instance.delete()
+
+    def perform_update(self, serializer):
+        """2. Хурлын төлөв өөрчлөх (Цуцлах) үед төслүүдийг чөлөөлөх"""
+        instance = serializer.save()
+
+        # Хэрэв хурлыг "CANCELLED" (Цуцлагдсан) болгож байвал
+        if instance.status == Meeting.Status.CANCELLED:
+            for proposal in instance.proposals.all():
+                if proposal.status not in [
+                    Proposal.Status.APPROVED,
+                    Proposal.Status.REJECTED,
+                    Proposal.Status.REVISION_REQUIRED,
+                ]:
+                    proposal.status = Proposal.Status.UNDER_REVIEW
+                    proposal.save()
+
+            # Цуцлагдсан хурлаас төслүүдийг салгах (Дараагийн шинэ хуралд сонгогдох боломжтой болгоно)
+            instance.proposals.clear()
 
 
 class DecisionLogViewSet(viewsets.ReadOnlyModelViewSet):

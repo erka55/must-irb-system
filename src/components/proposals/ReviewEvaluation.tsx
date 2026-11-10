@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 interface ReviewEvaluationProps {
@@ -20,13 +20,21 @@ export default function ReviewEvaluation({ proposalId, existingReview, onUpdate 
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  // ЗАСВАР: Хэрэв existingReview хоцорч орж ирвэл (API дуудлагаас шалтгаалж),
+  // утгуудыг автоматаар форм руу бөглөх useEffect нэмлээ.
+  useEffect(() => {
+    if (existingReview) {
+      setComments(existingReview.comments || "");
+      setDecision(existingReview.decision || "");
+    }
+  }, [existingReview]);
+
   // 1. Шүүмжийг түгжих нөхцөлийг тодорхойлох
-  // Хэрэв өмнө нь дүгнэлт гарсан бөгөөд тэр нь ACCEPT эсвэл REJECT байвал логик түгжигдэнэ.
   const isLocked = existingReview?.decision === "ACCEPT" || existingReview?.decision === "REJECT";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLocked) return; // Хэрэв түгжигдсэн бол илгээх үйлдлийг зогсооно
+    if (isLocked) return;
 
     if (!comments.trim()) {
       setError("Дүгнэлтээ оруулна уу.");
@@ -52,6 +60,7 @@ export default function ReviewEvaluation({ proposalId, existingReview, onUpdate 
 
     try {
       if (existingReview?.id) {
+        // ХУУЧИН ШҮҮМЖ БАЙВАЛ PATCH ХИЙЖ ЗАСНА (Давхардахгүй)
         await axios.patch(
           `http://localhost:8000/api/reviews/${existingReview.id}/`,
           { comments, decision },
@@ -59,6 +68,7 @@ export default function ReviewEvaluation({ proposalId, existingReview, onUpdate 
         );
         setSuccessMessage("Шүүмж амжилттай засагдлаа!");
       } else {
+        // ШИНЭЭР БИЧИЖ БАЙВАЛ POST ХИЙНЭ
         await axios.post(
           "http://localhost:8000/api/reviews/",
           { proposal: proposalId, decision, comments },
@@ -105,7 +115,7 @@ export default function ReviewEvaluation({ proposalId, existingReview, onUpdate 
             value={comments}
             onChange={(e) => setComments(e.target.value)}
             required
-            disabled={isLocked} // 3. Түгжигдсэн үед засах боломжгүй болгох
+            disabled={isLocked}
           />
         </div>
 
@@ -118,8 +128,10 @@ export default function ReviewEvaluation({ proposalId, existingReview, onUpdate 
             value={decision}
             onChange={(e) => setDecision(e.target.value)}
             required
-            disabled={isLocked} // 4. Түгжигдсэн үед засах боломжгүй болгох
+            disabled={isLocked}
           >
+            {" "}
+            {/* ЭНД АЛДАА БАЙСАН: /> байсныг > болгож засав */}
             <option value="" disabled>
               -- Шийдвэр сонгох --
             </option>

@@ -16,7 +16,7 @@ export default function RecordDecisionModal({ isOpen, meetingId, proposalIds, on
   const [decision, setDecision] = useState("");
   const [meetingMinutes, setMeetingMinutes] = useState("");
 
-  // 1. ШИНЭЭР НЭМСЭН: Файл хадгалах төлөв
+  // Файл хадгалах төлөв
   const [protocolFile, setProtocolFile] = useState<File | null>(null);
 
   const [proposalsInfo, setProposalsInfo] = useState<any[]>([]);
@@ -45,7 +45,7 @@ export default function RecordDecisionModal({ isOpen, meetingId, proposalIds, on
       fetchProposalsInfo();
       setDecision("");
       setMeetingMinutes("");
-      setProtocolFile(null); // 2. ШИНЭЭР НЭМСЭН: Модал нээгдэхэд файлыг цэвэрлэх
+      setProtocolFile(null); // Модал нээгдэхэд файлыг цэвэрлэх
       setError(null);
     }
   }, [isOpen, proposalIds]);
@@ -68,7 +68,7 @@ export default function RecordDecisionModal({ isOpen, meetingId, proposalIds, on
     setError(null);
 
     try {
-      // 3. ШИНЭЭР НЭМСЭН: protocolFile-ийг service рүү дамжуулах
+      // protocolFile-ийг service рүү дамжуулах
       await meetingService.recordDecision(meetingId, Number(selectedProposalId), decision as any, meetingMinutes, protocolFile);
 
       onSuccess();
@@ -114,7 +114,7 @@ export default function RecordDecisionModal({ isOpen, meetingId, proposalIds, on
                 {proposalsInfo.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.application_no ? `${p.application_no} : ` : `ID #${p.id} : `}
-                    {p.title.length > 60 ? p.title.substring(0, 60) + "..." : p.title}
+                    {p.title?.length > 60 ? p.title.substring(0, 60) + "..." : p.title}
                   </option>
                 ))}
               </select>
@@ -148,7 +148,6 @@ export default function RecordDecisionModal({ isOpen, meetingId, proposalIds, on
               ></textarea>
             </div>
 
-            {/* 4. ШИНЭЭР НЭМСЭН: Файл хавсаргах input */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Хурлын протокол (PDF, Word файл хавсаргах)</label>
               <input

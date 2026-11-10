@@ -154,10 +154,38 @@ export default function MeetingsPage() {
                     {meeting.proposals_detail.map((proposal: any) => (
                       <div
                         key={proposal.id}
-                        className="bg-blue-50 text-blue-800 text-sm px-3 py-2 rounded border border-blue-100 flex items-start"
+                        className="bg-blue-50 text-blue-800 text-sm px-3 py-2 rounded border border-blue-100 flex flex-col"
                       >
-                        <span className="font-bold mr-2 whitespace-nowrap">{proposal.application_no || proposal.id}</span>
-                        <span>{proposal.title}</span>
+                        <div className="flex items-start">
+                          <span className="font-bold mr-2 whitespace-nowrap">{proposal.application_no || proposal.id}</span>
+                          <span>{proposal.title}</span>
+                        </div>
+
+                        {/* ШИНЭЭР НЭМЭГДСЭН: Зөвхөн хурал "Явагдаж байгаа" үед шүүмжүүдийг харуулах */}
+                        {meeting.status === "IN_PROGRESS" && proposal.reviews && proposal.reviews.length > 0 && (
+                          <div className="mt-3 bg-white p-3 rounded border border-blue-200 shadow-sm w-full">
+                            <h4 className="font-semibold text-xs text-gray-700 mb-2 border-b pb-1">Шүүмжлэгчдийн дүгнэлт:</h4>
+                            <div className="space-y-2">
+                              {proposal.reviews.map((review: any, idx: number) => (
+                                <div key={idx} className="text-xs text-gray-700 bg-gray-50 p-2 rounded border border-gray-100">
+                                  <div className="flex justify-between items-center font-medium mb-1 pb-1 border-b border-gray-200">
+                                    <span>👤 {review.reviewer_name}</span>
+                                    <span className="px-2 py-0.5 rounded text-[10px] bg-indigo-100 text-indigo-800 font-bold uppercase tracking-wide">
+                                      {review.recommendation_display || "Дүгнэлт гараагүй"}
+                                    </span>
+                                  </div>
+                                  <p className="mt-1 italic text-gray-600">{review.comments || "Тайлбар оруулаагүй байна."}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {meeting.status === "IN_PROGRESS" && (!proposal.reviews || proposal.reviews.length === 0) && (
+                          <div className="mt-2 text-xs text-orange-600 bg-orange-50 p-2 rounded border border-orange-100 italic">
+                            Шүүмжлэгчдийн эцсийн дүгнэлт хараахан гараагүй байна.
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -222,7 +250,8 @@ export default function MeetingsPage() {
               )}
               {/* ------------------------------------------------------------------------- */}
 
-              {canManageMeetings && (
+              {/* Дарга, Нарийн бичигт болон зөвхөн Явагдаж байгаа хуралд харагдана */}
+              {canManageMeetings && meeting.status === "IN_PROGRESS" && (
                 <div className="mt-4 flex gap-2 justify-end">
                   <button
                     onClick={() => openDecisionModal(meeting.id, meeting.proposals)}

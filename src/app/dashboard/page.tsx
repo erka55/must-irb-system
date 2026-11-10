@@ -141,8 +141,8 @@ export default function MeetingsPage() {
                 </div>
               )}
 
-              {/* Зөвхөн Дарга, Нарийн бичигт харагдана */}
-              {canManageMeetings && (
+              {/* Дарга, Нарийн бичигт болон зөвхөн Явагдаж байгаа хуралд харагдана */}
+              {canManageMeetings && meeting.status === "IN_PROGRESS" && (
                 <div className="mt-4 flex gap-2 justify-end">
                   <button
                     onClick={() => openDecisionModal(meeting.id, meeting.proposals)}
