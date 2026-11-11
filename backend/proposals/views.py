@@ -41,20 +41,35 @@ class ProposalViewSet(viewsets.ModelViewSet):
         # 2. Хурал товлох модалын шүүлтүүр (ready_for_meeting)
         ready_for_meeting = self.request.query_params.get("ready_for_meeting", None)
         if ready_for_meeting == "true":
-            base_queryset = (
-                base_queryset.filter(status="UNDER_REVIEW")
-                .annotate(
-                    total_assignments=Count("reviewers", distinct=True),
-                    # ЗАСВАР: Шүүмжийн тоог биш, шүүмж өгсөн 'шүүмжлэгчдийн' тоог тоолно (давхардал үүссэн ч нэг хүн гэж үзнэ)
-                    completed_reviews=Count(
-                        "reviews__reviewer",
-                        filter=Q(reviews__is_completed=True),
-                        distinct=True,
-                    ),
-                )
-                .filter(
-                    total_assignments__gt=0, total_assignments=F("completed_reviews")
-                )
+            # Зөвхөн UNDER_REVIEW (эсвэл REVISION_REQUIRED байгаад дахин хэлэлцэх шаардлагатай бол энд нэмж болно) төслүүдийг авна
+            base_queryset = base_queryset.filter(status="UNDER_REVIEW").annotate(
+                total_assignments=Count("reviewers", distinct=True)
+            )
+
+            # Python түвшинд нэмэлт шүүлт хийх нь илүү найдвартай (Олон Review бичигдсэн байх магадлалтай үед)
+            ready_ids = []
+            for proposal in base_queryset:
+                total_reviewers = proposal.reviewers.count()
+                if total_reviewers == 0:
+                    continue
+
+                # Томилогдсон шүүмжлэгч бүрийн хамгийн сүүлийн шүүмж completed эсэхийг шалгах
+                completed_count = 0
+                for reviewer in proposal.reviewers.all():
+                    # Тухайн шүүмжлэгчийн тус төсөлд өгсөн хамгийн сүүлийн шүүмж
+                    latest_review = (
+                        proposal.reviews.filter(reviewer=reviewer)
+                        .order_by("-updated_at")
+                        .first()
+                    )
+                    if latest_review and latest_review.is_completed:
+                        completed_count += 1
+
+                if total_reviewers == completed_count:
+                    ready_ids.append(proposal.id)
+
+            base_queryset = Proposal.objects.filter(id__in=ready_ids).order_by(
+                "-updated_at"
             )
 
         return base_queryset
@@ -200,17 +215,28 @@ class ProposalViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Төлөвийг шалгаж өөр өөрөөр хадгалах (ЗАСВАР ОРСОН ХЭСЭГ)
         if proposal.status == "REVISION_REQUIRED":
-            # Засварлаад буцааж байгаа бол шууд ХЯНАГДАЖ БАЙГАА руу оруулж, шүүмжлэгчдийн эрхийг нээнэ
+            # 1. Засварлаад буцааж байгаа бол шууд ХЯНАГДАЖ БАЙГАА (UNDER_REVIEW) руу шилжинэ
             proposal.status = "UNDER_REVIEW"
             message = (
                 "Засварласан төсөл амжилттай илгээгдлээ. Шүүмжлэгчид дахин хянах болно."
             )
 
-            # (Нэмэлт логик: Шүүмжлэгчид дахин хянах болсон тул тэдний өмнөх 'Review' үнэлгээнүүдийн
-            # 'is_completed' төлөвийг False болгож нээх эсвэл шинээр үүсгэх логик энд байж болно.
-            # Одоогоор зөвхөн Proposal статусыг шилжүүлье)
+            # 2. Шүүмжлэгчид дахин хянаж шийдвэр оруулах боломжтой болгож review-үүдийг нээнэ
+            from reviews.models import Review
+
+            Review.objects.filter(proposal=proposal).update(is_completed=False)
+
+            # 3. Шүүмжлэгчид рүү дахин хянах шаардлагатай тухай мэдэгдэл илгээх
+            for reviewer in proposal.reviewers.all():
+                try:
+                    Notification.objects.create(
+                        recipient=reviewer,
+                        title="Төслийн засвар хийгдлээ",
+                        message=f"'{proposal.title[:30]}' төсөлд судлаач засвар оруулсан тул дахин хянана уу.",
+                    )
+                except Exception as e:
+                    print("Notification error:", e)
 
         else:
             # Шинэ төсөл (DRAFT) илгээж байгаа бол SUBMITTED (Нарийн бичиг рүү) очино

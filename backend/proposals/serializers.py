@@ -77,8 +77,11 @@ class ProposalSerializer(serializers.ModelSerializer):
         }
 
     def get_is_scheduled(self, obj):
-        # Ямар ч төлөвтэй байсан хамаагүй, тухайн төсөл ямар нэгэн хуралд орсон л бол True буцаана
-        return Meeting.objects.filter(proposals=obj).exists()
+        # Зөвхөн товлогдсон эсвэл явагдаж байгаа хуралд орсон эсэхийг шалгана.
+        # Өндөрлөсөн (COMPLETED) хурал дахь төслийг дахин товлох боломжтой болгоно.
+        return Meeting.objects.filter(
+            proposals=obj, status__in=["SCHEDULED", "IN_PROGRESS"]
+        ).exists()
 
     status_display = serializers.CharField(source="get_status_display", read_only=True)
 

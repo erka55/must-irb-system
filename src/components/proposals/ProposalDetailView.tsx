@@ -75,12 +75,17 @@ export function ProposalDetailView({ id }: { id: string }) {
   };
 
   const handleSubmitProposal = async () => {
-    if (!confirm("Төслийг албан ёсоор илгээх үү? Илгээсний дараа баримт бичигт өөрчлөлт оруулах боломжгүй болно.")) return;
+    const isRevision = proposal?.status === "REVISION_REQUIRED";
+    const confirmMessage = isRevision
+      ? "Зассан төслийг албан ёсоор буцаан илгээх үү? Шүүмжлэгчид дахин хянаж эхэлнэ."
+      : "Төслийг албан ёсоор илгээх үү? Илгээсний дараа баримт бичигт өөрчлөлт оруулах боломжгүй болно.";
+
+    if (!confirm(confirmMessage)) return;
 
     try {
       setIsSubmitting(true);
       await submitProposal(id);
-      alert("Төсөл амжилттай илгээгдлээ!");
+      alert(isRevision ? "Зассан төсөл амжилттай дахин илгээгдлээ!" : "Төсөл амжилттай илгээгдлээ!");
       fetchProposal();
     } catch (err: any) {
       console.error(err);
@@ -153,6 +158,7 @@ export function ProposalDetailView({ id }: { id: string }) {
                   </div>
 
                   <div className="flex flex-col items-end gap-2 shrink-0">
+                    {/* СТАТУС БАДЖ */}
                     <span className="px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800">
                       {proposal.status_display || proposal.status}
                     </span>
@@ -164,7 +170,11 @@ export function ProposalDetailView({ id }: { id: string }) {
                           disabled={isSubmitting || isDeleting}
                           className="bg-green-600 text-white px-4 py-2 rounded-md font-semibold text-sm hover:bg-green-700 disabled:opacity-50 transition-colors shadow-sm"
                         >
-                          {isSubmitting ? "Илгээж байна..." : "Төслийг илгээх (Submit)"}
+                          {isSubmitting
+                            ? "Илгээж байна..."
+                            : proposal.status === "REVISION_REQUIRED"
+                              ? "Зассан төслийг дахин илгээх"
+                              : "Төслийг илгээх (Submit)"}
                         </button>
                       )}
 
@@ -217,7 +227,6 @@ export function ProposalDetailView({ id }: { id: string }) {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-sm font-semibold text-gray-700 mb-2">Товч агуулга / Хураангуй</h3>
-
                   {/* ХУРААНГУЙ ЗАСАХ ХЭСЭГ */}
                   {isEditing ? (
                     <textarea
@@ -244,7 +253,84 @@ export function ProposalDetailView({ id }: { id: string }) {
                   />
                 )}
 
-                {/* ШҮҮМЖЛЭГЧИЙН ДҮГНЭЛТ ОРУУЛАХ ХЭСЭГ */}
+                {/* ӨМНӨ НЬ ӨГСӨН БҮХ ШҮҮМЖ, САНАЛ ДҮГНЭЛТҮҮДИЙГ ХАРУУЛАХ ХЭСЭГ */}
+                {proposal.reviews && proposal.reviews.length > 0 && (
+                  <div className="p-4 bg-amber-50 rounded-lg border border-amber-200 space-y-3">
+                    <h3 className="text-base font-semibold text-amber-900 flex items-center gap-2">
+                      💬 Шүүмжлэгчдийн өгсөн санал, дүгнэлтүүд
+                    </h3>
+                    <div className="space-y-3">
+                      {proposal.reviews.map((rev: any, index: number) => (
+                        <div key={rev.id || index} className="p-3 bg-white rounded border border-amber-100 shadow-sm">
+                          <div className="flex justify-between items-center mb-1 text-xs text-gray-500">
+                            <span className="font-semibold text-gray-700">
+                              Шүүмжлэгч #{index + 1} {rev.reviewer_name ? `(${rev.reviewer_name})` : ""}
+                            </span>
+                            <span>{rev.updated_at ? new Date(rev.updated_at).toLocaleDateString() : ""}</span>
+                          </div>
+                          <div className="mb-2">
+                            <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-800">
+                              Шийдвэр: {rev.decision_display || rev.decision || "Хянагдаж байна"}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-800 whitespace-pre-wrap bg-gray-50 p-2 rounded border border-gray-100">
+                            {rev.comments || "Тусгай сэтгэгдэл бичигдээгүй байна."}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ХУРЛЫН ЭЦСИЙН ШИЙДВЭРҮҮД (DECISION LOGS) - ШИНЭЭР НЭМЭГДСЭН */}
+                {proposal.final_decisions && proposal.final_decisions.length > 0 && (
+                  <div className="p-4 bg-indigo-50 rounded-lg border border-indigo-200 space-y-3 mt-6">
+                    <h3 className="text-base font-semibold text-indigo-900 flex items-center gap-2">⚖️ Хурлын шийдвэрүүд</h3>
+                    <div className="space-y-3">
+                      {proposal.final_decisions.map((decisionLog: any, index: number) => {
+                        let badgeColor = "bg-gray-100 text-gray-800";
+                        if (decisionLog.decision === "APPROVED") badgeColor = "bg-green-100 text-green-800";
+                        if (decisionLog.decision === "REJECTED") badgeColor = "bg-red-100 text-red-800";
+                        if (decisionLog.decision === "REVISION_REQUIRED") badgeColor = "bg-yellow-100 text-yellow-800";
+
+                        return (
+                          <div key={index} className="p-4 bg-white rounded-md border border-indigo-100 shadow-sm">
+                            <div className="flex justify-between items-center mb-3">
+                              <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full ${badgeColor}`}>
+                                Шийдвэр: {decisionLog.decision_display || decisionLog.decision}
+                              </span>
+                              <span className="text-xs text-gray-500 font-medium">
+                                {decisionLog.created_at ? new Date(decisionLog.created_at).toLocaleString() : ""}
+                              </span>
+                            </div>
+
+                            {decisionLog.meeting_minutes && (
+                              <div className="text-sm text-gray-800 whitespace-pre-wrap bg-gray-50 p-3 rounded border border-gray-200 mt-2 leading-relaxed">
+                                <span className="font-semibold text-gray-700 block mb-1">Хурлын тэмдэглэл / Протокол:</span>
+                                {decisionLog.meeting_minutes}
+                              </div>
+                            )}
+
+                            {decisionLog.protocol_file && (
+                              <div className="mt-3 pt-3 border-t border-gray-100">
+                                <a
+                                  href={decisionLog.protocol_file}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 font-medium"
+                                >
+                                  📎 Хавсаргасан протокол файл татах
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* ШҮҮМЖЛЭГЧИЙН ДҮГНЭЛТ ОРУУЛАХ ХЭСЭГ (Шүүмжлэгч өөрөө хянаж байх үед) */}
                 {(() => {
                   const isAuthorizedRole = ["REVIEWER", "CHAIR", "SECRETARY"].includes(user?.role || "");
                   const isAssignedReviewer = proposal.reviewers?.some((reviewer: any) => String(reviewer.id) === String(user?.id));
