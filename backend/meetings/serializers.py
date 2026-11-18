@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Meeting, DecisionLog
+from .models import Meeting, DecisionLog, DecisionLetter
 from proposals.models import Proposal
 
 
@@ -147,3 +147,34 @@ class MeetingSerializer(serializers.ModelSerializer):
                 )
 
         return attrs
+
+
+class DecisionLetterSerializer(serializers.ModelSerializer):
+    # Фронтэндэд харуулахад амар байх үүднээс хэрэгтэй мэдээллүүдийг татаж өгөх
+    proposal_no = serializers.CharField(
+        source="decision_log.proposal.application_no", read_only=True
+    )
+    proposal_title = serializers.CharField(
+        source="decision_log.proposal.title", read_only=True
+    )
+    decision_type = serializers.CharField(
+        source="decision_log.decision", read_only=True
+    )
+    decision_display = serializers.CharField(
+        source="decision_log.get_decision_display", read_only=True
+    )
+
+    class Meta:
+        model = DecisionLetter
+        fields = [
+            "id",
+            "decision_log",
+            "proposal_no",
+            "proposal_title",
+            "decision_type",
+            "decision_display",
+            "draft_text",
+            "scanned_pdf",
+            "created_at",
+            "updated_at",
+        ]

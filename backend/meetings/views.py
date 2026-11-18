@@ -1,10 +1,15 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.utils import timezone
 
-from .models import Meeting, DecisionLog
-from .serializers import MeetingSerializer, DecisionLogSerializer
+from .models import Meeting, DecisionLog, DecisionLetter
+from .serializers import (
+    MeetingSerializer,
+    DecisionLogSerializer,
+    DecisionLetterSerializer,
+)
 from proposals.models import Proposal
 from users.models import User
 from notifications.models import Notification
@@ -178,3 +183,31 @@ class DecisionLogViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = DecisionLog.objects.all().order_by("-created_at")
     serializer_class = DecisionLogSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
+class DecisionLetterViewSet(viewsets.ModelViewSet):
+    queryset = DecisionLetter.objects.all().order_by("-created_at")
+    serializer_class = DecisionLetterSerializer
+    # permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=True, methods=["post"], parser_classes=[MultiPartParser, FormParser])
+    def upload_pdf(self, request, pk=None):
+        letter = self.get_object()
+        file = request.FILES.get("scanned_pdf")
+
+        if not file:
+            return Response(
+                {"error": "PDF файл илгээгээгүй байна."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        letter.scanned_pdf = file
+        letter.save()
+
+        return Response(
+            {
+                "message": "Албан бичгийн PDF файл амжилттай хадгалагдлаа.",
+                "pdf_url": request.build_absolute_uri(letter.scanned_pdf.url),
+            },
+            status=status.HTTP_200_OK,
+        )

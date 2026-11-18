@@ -69,3 +69,29 @@ class DecisionLog(models.Model):
 
     def __str__(self):
         return f"{self.proposal.title} - {self.get_decision_display()}"
+
+
+class DecisionLetter(models.Model):
+    decision_log = models.OneToOneField(
+        DecisionLog,
+        on_delete=models.CASCADE,
+        related_name="decision_letter",
+        verbose_name="Хурлын шийдвэр",
+    )
+    draft_text = models.TextField(
+        blank=True, null=True, verbose_name="Албан бичгийн ноорог текст"
+    )
+    scanned_pdf = models.FileField(
+        upload_to="decision_letters/",
+        blank=True,
+        null=True,
+        verbose_name="Гарын үсэг зурж, тамгалсан эцсийн PDF файл",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        # DecisionLog-оос шийдвэрийн төрөл болон төслийн дугаарыг дуудаж харуулах
+        decision_display = self.decision_log.get_decision_display()
+        proposal_no = self.decision_log.proposal.application_no
+        return f"{decision_display} албан бичиг: {proposal_no}"
